@@ -1,0 +1,60 @@
+# Publishes Helm charts to GitHub Pages (index.yaml + .tgz on gh-pages) and creates chart GitHub Releases.
+# Runs when a release tag v* is pushed (same cadence as repo VERSION tags on main).
+# Repo tag v* follows root VERSION; Chart.yaml `version:` is the Helm package semver (often aligned, may diverge — see README Versioning).
+# chart-releaser only packages charts with file changes vs the last baseline commit; the tagged commit
+# must include a diff under run/kubernetes/helm/ (e.g. bump Chart.yaml version) or the job succeeds with
+# “No chart changes detected” and does not update gh-pages.
+# See: https://github.com/helm/chart-releaser-action
+# Repo Settings → Pages: Source = branch gh-pages, folder / (root).
+name: Release Charts
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      # chart-releaser expects refs/remotes/origin/gh-pages; it fails with
+      # "fatal: invalid reference: origin/gh-pages" on first publish if the branch does not exist yet.
+      - name: Ensure gh-pages branch exists
+        run: |
+          set -euo pipefail
+          TAG_SHA=$(git rev-parse HEAD)
+          git fetch origin
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            echo "Remote branch gh-pages already exists."
+          else
+            echo "Creating orphan gh-pages (first Helm chart publish)..."
+            git checkout --orphan gh-pages-init
+            git rm -rf . 2>/dev/null || true
+            printf '%s\n' '# Helm chart index (updated by chart-releaser)' > README.md
+            git add README.md
+            git commit -m "chore: initialize gh-pages for Helm chart index"
+            git push origin HEAD:gh-pages
+            git checkout "$TAG_SHA"
+          fi
+          git fetch origin
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.7.0
+        with:
+          charts_dir: run/kubernetes/helm
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

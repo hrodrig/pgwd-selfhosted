@@ -1,0 +1,72 @@
+# Validates the pgwd Helm chart on every PR and on pushes that touch the chart.
+# helm lint: Chart.yaml, values, template syntax.
+# kubeconform: rendered YAML vs Kubernetes OpenAPI schemas (no cluster; kubectl apply --dry-run
+# still talks to localhost:8080 for discovery on recent kubectl — connection refused in CI).
+name: Helm chart
+
+on:
+  pull_request:
+    paths:
+      - "run/kubernetes/helm/**"
+      - ".github/workflows/helm-lint.yml"
+  push:
+    branches: [main, develop]
+    paths:
+      - "run/kubernetes/helm/**"
+      - ".github/workflows/helm-lint.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  KUBECONFORM_VERSION: v0.7.0
+  # Keep in sync with validation expectations (kubeconform -kubernetes-version).
+  KUBERNETES_VERSION: "1.30.0"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      CHART_DIR: run/kubernetes/helm/pgwd
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.4
+
+      - name: Install kubeconform
+        run: |
+          curl -fsSL "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" | tar xz
+          sudo mv kubeconform /usr/local/bin/
+          kubeconform -v
+
+      - name: helm lint
+        run: helm lint "$CHART_DIR"
+
+      - name: helm template + kubeconform (default values)
+        run: |
+          helm template test-rel "$CHART_DIR" --namespace test-ns | \
+            kubeconform -strict -kubernetes-version "${KUBERNETES_VERSION}" -summary -
+
+      - name: helm template + kubeconform (persistence disabled)
+        run: |
+          helm template test-rel "$CHART_DIR" --namespace test-ns \
+            --set persistence.enabled=false | \
+            kubeconform -strict -kubernetes-version "${KUBERNETES_VERSION}" -summary -
+
+      - name: helm template + kubeconform (inline DB URL Secret)
+        run: |
+          helm template test-rel "$CHART_DIR" --namespace test-ns \
+            --set secrets.dbUrl='postgres://ci:ci@postgres.default.svc.cluster.local:5432/db?sslmode=disable' | \
+            kubeconform -strict -kubernetes-version "${KUBERNETES_VERSION}" -summary -
+
+      - name: helm template + kubeconform (existing Secret for DB / notifiers)
+        run: |
+          helm template test-rel "$CHART_DIR" --namespace test-ns \
+            --set secrets.create=false \
+            --set secrets.existingSecret=my-imported-secret | \
+            kubeconform -strict -kubernetes-version "${KUBERNETES_VERSION}" -summary -

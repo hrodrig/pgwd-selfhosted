@@ -1,0 +1,22 @@
+# How to run pgwd (self-hosted)
+
+← [Back to the repository README](../README.md).
+
+Pick a **mode** below. Commands are documented in each subdirectory’s `README.md`.
+
+| Directory | When to use |
+|-----------|-------------|
+| [`run/common/`](common/) | Shared **environment template** for Compose. Copy to **`${PGWD_HOST_DATA}/.env`**, set **`PGWD_HOST_DATA`** inside that file, then `docker compose --env-file "${PGWD_HOST_DATA}/.env" -f …` from the clone root (see [`run/common/.env.example`](common/.env.example)). |
+| [`standalone/`](standalone/) | **Release binaries** from [pgwd Releases](https://github.com/hrodrig/pgwd/releases) — no Docker. |
+| [`docker/`](docker/) | **`docker run`** with the GHCR image — minimal, no Compose file. |
+| [`docker-compose/minimal/`](docker-compose/minimal/) | **One Compose service** — quick test or small VPS. |
+| [`docker-compose/traefik/`](docker-compose/traefik/) | **Traefik + TLS** — production-style HTTPS on your domain. |
+| [`docker-compose/observability/`](docker-compose/observability/) | **Optional** Prometheus, Grafana, Loki (after Traefik). Copy **[`observability.env.example`](docker-compose/observability/observability.env.example)** to **`${PGWD_HOST_DATA}/.env.observability`** (same **`PGWD_HOST_DATA`** as the main **`.env`**), then `docker compose --env-file "${PGWD_HOST_DATA}/.env.observability" -p pgwd-obs -f …` (see [README](docker-compose/observability/README.md)). |
+| [`kubernetes/helm/`](kubernetes/helm/) | **Helm** chart — install from the [published Helm repo](https://hrodrig.github.io/pgwd-selfhosted) when available; sources live here. |
+| [`kubernetes/manifests/`](kubernetes/manifests/) | Raw manifests — optional; see folder README. |
+
+Always use the **published image tag** that matches your desired [pgwd](https://github.com/hrodrig/pgwd) release (see `PGWD_VERSION` in [`run/common/.env.example`](common/.env.example)).
+
+---
+
+**[↑ Back to the repository README](../README.md)**

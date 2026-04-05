@@ -1,0 +1,27 @@
+# json-file log rotation (avoids unbounded container log growth on disk).
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  pgwd:
+    image: ghcr.io/hrodrig/pgwd:${PGWD_VERSION:-v0.5.10}
+    container_name: pgwd
+    restart: unless-stopped
+    environment:
+      - PGWD_DB_URL=${PGWD_DB_URL:?set PGWD_DB_URL in .env}
+      - PGWD_CLIENT=${PGWD_CLIENT:-pgwd-compose}
+      - PGWD_INTERVAL=${PGWD_INTERVAL:-60}
+      - PGWD_LOG_LEVEL=${PGWD_LOG_LEVEL:-info}
+      - PGWD_HTTP_LISTEN=0.0.0.0:8080
+      - PGWD_SQLITE_PATH=/var/lib/pgwd/pgwd.db
+      - PGWD_NOTIFICATIONS_SLACK_WEBHOOK=${PGWD_NOTIFICATIONS_SLACK_WEBHOOK:-}
+      - PGWD_NOTIFICATIONS_LOKI_URL=${PGWD_NOTIFICATIONS_LOKI_URL:-}
+    ports:
+      - "${PGWD_HOST_PORT:-8080}:8080"
+    volumes:
+      # Host path for SQLite (prefer absolute, e.g. /var/lib/pgwd). Default: repo data/ via path relative to this file.
+      - ${PGWD_HOST_DATA:-../../../data}:/var/lib/pgwd
+    logging: *default-logging

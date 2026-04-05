@@ -6,8 +6,6 @@
 [![App image on GHCR](https://img.shields.io/badge/image-ghcr.io%2Fhrodrig%2Fpgwd-2496ED?logo=github)](https://github.com/hrodrig/pgwd/pkgs/container/pgwd)
 [![pgwd app](https://img.shields.io/badge/app-hrodrig%2Fpgwd-181717?logo=github)](https://github.com/hrodrig/pgwd)
 
-![pgwd-selfhosted — Docker, Compose, Helm, run/](assets/pgwd-selfhosted-hero.png)
-
 Deployment manifests for **[pgwd](https://github.com/hrodrig/pgwd)** — Compose, Helm, `docker run`, optional observability. **App source and releases:** [github.com/hrodrig/pgwd](https://github.com/hrodrig/pgwd).
 
 > **Work in progress — not stable yet.** This repo is under active development. Treat it as **experimental** until work is **merged into `main`** and you follow tagged releases or the project explicitly marks a stable cut. Do not assume production readiness from `develop` alone.

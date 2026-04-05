@@ -282,17 +282,13 @@ Labels typically include **`client`**, **`cluster`**, **`database`** (see upstre
 
 ### Example: Grafana Explore (Prometheus)
 
-With Prometheus scraping **`pgwd`** and Grafana’s **Explore** tab using the provisioned Prometheus data source, you should see **`pgwd_*`** metrics after pgwd has completed at least one check with SQLite enabled:
-
-![Grafana Explore — `pgwd_*` metrics in the metric selector](../../../assets/grafana-explore-pgwd-metrics.png)
+With Prometheus scraping **`pgwd`** and Grafana’s **Explore** tab using the provisioned Prometheus data source, you should see **`pgwd_*`** metrics after pgwd has completed at least one check with SQLite enabled. (No screenshots in-repo; capture locally from Explore if you need visuals for your runbook.)
 
 Example query — total connections by database:
 
 ```promql
 pgwd_connections_total
 ```
-
-![Grafana Explore — connection totals](../../../assets/grafana-promql-pgwd-http-rate.png)
 
 **How to read it:** each series is keyed by `client`, `cluster`, and `database`. Use **`pgwd_state`** for alerting on threshold state.
 

@@ -2,7 +2,6 @@ apiVersion: v2
 name: pgwd
 description: Postgres Watch Dog - monitor PostgreSQL connection counts and notify via Slack/Loki
 type: application
-icon: https://raw.githubusercontent.com/hrodrig/pgwd-selfhosted/main/assets/pgwd-selfhosted-icon.png
 version: 0.1.0
 appVersion: "0.5.10"
 keywords:

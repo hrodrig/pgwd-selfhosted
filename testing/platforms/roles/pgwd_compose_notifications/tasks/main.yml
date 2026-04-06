@@ -1,0 +1,122 @@
+---
+# Per-VPS: mock on host :port, pgwd in Docker reaches host via bridge gateway, docker exec -force-notification.
+
+- name: Check required variables
+  ansible.builtin.assert:
+    that:
+      - pgwd_db_url is defined
+      - pgwd_db_url | length > 0
+    quiet: true
+
+- name: Get Docker network gateway for pgwd container (host IP from container)
+  ansible.builtin.shell: |
+    set -e
+    docker inspect "{{ pgwd_compose_pgwd_container_name }}" \
+      --format '{% raw %}{{range .NetworkSettings.Networks}}{{.Gateway}}{{printf "\n"}}{{end}}{% endraw %}' | head -n1
+  environment:
+    PATH: "{{ compose_docker_path_prefix }}:{{ (ansible_facts.env | default(ansible_facts.ansible_env | default({}))).PATH | default('/usr/bin:/bin') }}"
+  register: pgwd_compose_gateway_out
+  changed_when: false
+
+- name: Set compose notify host IP
+  ansible.builtin.set_fact:
+    compose_notify_host_ip: >-
+      {{
+        (pgwd_compose_gateway_out.stdout | trim)
+        if (pgwd_compose_gateway_out.stdout | trim | length) > 0
+        else pgwd_compose_docker_host_fallback
+      }}
+
+- name: Show notify host IP used inside container URLs
+  ansible.builtin.debug:
+    msg: "pgwd container will POST notifications to http://{{ compose_notify_host_ip }}:{{ notification_mock_port | default(9999) }}/…"
+
+- name: Notification test with per-host mock
+  block:
+    - name: Start notification mock on host
+      ansible.builtin.include_role:
+        name: notification_mock
+      vars:
+        notification_mock_state: started
+
+    # Long-lived container may use PGWD_DRY_RUN=true; that blocks real sends. Override for this one-shot exec only.
+    - name: Run force-notification inside pgwd container
+      ansible.builtin.command:
+        argv:
+          - docker
+          - exec
+          - -e
+          - PGWD_DRY_RUN=false
+          - "{{ pgwd_compose_pgwd_container_name }}"
+          - /home/pgwd/pgwd
+          - "-force-notification"
+          - "-interval"
+          - "0"
+          - "-client"
+          - "compose-test-{{ inventory_hostname }}"
+          - "-db-url"
+          - "{{ pgwd_db_url }}"
+          - "-notifications-loki-url"
+          - "http://{{ compose_notify_host_ip }}:{{ notification_mock_port | default(9999) }}/loki/api/v1/push"
+          - "-notifications-slack-webhook"
+          - "http://{{ compose_notify_host_ip }}:{{ notification_mock_port | default(9999) }}/slack"
+      environment:
+        PATH: "{{ compose_docker_path_prefix }}:{{ (ansible_facts.env | default(ansible_facts.ansible_env | default({}))).PATH | default('/usr/bin:/bin') }}"
+      register: pgwd_notify
+      changed_when: false
+      failed_when: pgwd_notify.rc != 0
+
+    - name: Wait for captures to flush
+      ansible.builtin.pause:
+        seconds: 3
+
+    - name: Check Loki capture file exists
+      ansible.builtin.stat:
+        path: /tmp/pgwd-mock-loki-api-v1-push.json
+      register: loki_capture
+
+    - name: Assert Loki capture received
+      ansible.builtin.assert:
+        that:
+          - loki_capture.stat.exists
+        fail_msg: "No Loki capture at /tmp/pgwd-mock-loki-api-v1-push.json (mock or Docker gateway / set pgwd_compose_docker_host_fallback)"
+
+    - name: Read Loki capture content
+      ansible.builtin.slurp:
+        src: /tmp/pgwd-mock-loki-api-v1-push.json
+      register: loki_content
+
+    - name: Assert Loki capture contains pgwd data
+      ansible.builtin.assert:
+        that:
+          - "'pgwd' in (loki_content.content | b64decode)"
+        fail_msg: "Loki capture missing 'pgwd': {{ loki_content.content | b64decode }}"
+
+    - name: Check Slack capture file exists
+      ansible.builtin.stat:
+        path: /tmp/pgwd-mock-slack.json
+      register: slack_capture
+
+    - name: Assert Slack capture received
+      ansible.builtin.assert:
+        that:
+          - slack_capture.stat.exists
+        fail_msg: "No Slack capture at /tmp/pgwd-mock-slack.json"
+
+    - name: Read Slack capture content
+      ansible.builtin.slurp:
+        src: /tmp/pgwd-mock-slack.json
+      register: slack_content
+
+    - name: Assert Slack capture contains pgwd data
+      ansible.builtin.assert:
+        that:
+          - "'pgwd' in (slack_content.content | b64decode)"
+        fail_msg: "Slack capture missing 'pgwd': {{ slack_content.content | b64decode }}"
+
+  always:
+    - name: Stop notification mock on host
+      ansible.builtin.include_role:
+        name: notification_mock
+      vars:
+        notification_mock_state: stopped

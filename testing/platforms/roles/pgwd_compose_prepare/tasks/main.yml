@@ -1,0 +1,39 @@
+---
+- name: Check required variables
+  ansible.builtin.assert:
+    that:
+      - pgwd_db_url is defined
+      - pgwd_db_url | length > 0
+      - pgwd_host_data is defined
+      - pgwd_host_data | length > 0
+    quiet: true
+
+- name: Install git
+  ansible.builtin.package:
+    name: git
+    state: present
+
+- name: Ensure repository parent directory exists
+  ansible.builtin.file:
+    path: "{{ pgwd_compose_repo_dest | dirname }}"
+    state: directory
+    mode: "0755"
+
+- name: Clone or update pgwd-selfhosted
+  ansible.builtin.git:
+    repo: "{{ pgwd_compose_repo_url }}"
+    dest: "{{ pgwd_compose_repo_dest }}"
+    version: "{{ pgwd_compose_repo_version }}"
+    update: true
+
+- name: Ensure PGWD_HOST_DATA directory exists
+  ansible.builtin.file:
+    path: "{{ pgwd_host_data }}"
+    state: directory
+    mode: "0755"
+
+- name: Deploy Compose environment file
+  ansible.builtin.template:
+    src: env.compose.j2
+    dest: "{{ pgwd_host_data }}/.env"
+    mode: "0600"

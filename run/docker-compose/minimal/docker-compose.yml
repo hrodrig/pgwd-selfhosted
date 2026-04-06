@@ -15,6 +15,8 @@ services:
       - PGWD_CLIENT=${PGWD_CLIENT:-pgwd-compose}
       - PGWD_INTERVAL=${PGWD_INTERVAL:-60}
       - PGWD_LOG_LEVEL=${PGWD_LOG_LEVEL:-info}
+      # Without Slack/Loki URLs, pgwd exits unless dry-run is on (otherwise restart loop). Default true for minimal/lab; set false when notifiers are set.
+      - PGWD_DRY_RUN=${PGWD_DRY_RUN:-true}
       - PGWD_HTTP_LISTEN=0.0.0.0:8080
       - PGWD_SQLITE_PATH=/var/lib/pgwd/pgwd.db
       - PGWD_NOTIFICATIONS_SLACK_WEBHOOK=${PGWD_NOTIFICATIONS_SLACK_WEBHOOK:-}

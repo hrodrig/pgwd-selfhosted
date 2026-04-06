@@ -32,6 +32,8 @@ Environment:
   PGWD_HOST_DATA   Host directory for operator files (required):
                    - minimal, traefik:  \${PGWD_HOST_DATA}/.env
                    - observability:     \${PGWD_HOST_DATA}/.env.observability
+  PGWD_DRY_RUN     Optional; for stack minimal, if unset in the shell and missing from .env, the script
+                   exports PGWD_DRY_RUN=true before docker compose (safe default without notifiers).
 
 Examples:
   export PGWD_HOST_DATA=/home/pgwd/pgwd-data
@@ -130,6 +132,15 @@ esac
 if [[ "$STACK" != "observability" && "$TRAEFIK_OVERLAY" -eq 1 ]]; then
   echo "error: --traefik applies only to the observability stack" >&2
   exit 1
+fi
+
+# Minimal stack: pgwd requires dry-run or notifiers. If the operator .env omits PGWD_DRY_RUN and the
+# shell does not set it, export true so compose file interpolation ${PGWD_DRY_RUN:-true} always
+# resolves (avoids "no notifier configured" restart loops when using an older compose copy).
+if [[ "$STACK" == "minimal" && -z "${PGWD_DRY_RUN:-}" ]]; then
+  if [[ -f "$MAIN_ENV" ]] && ! grep -qE '^[[:space:]]*PGWD_DRY_RUN=' "$MAIN_ENV"; then
+    export PGWD_DRY_RUN=true
+  fi
 fi
 
 cd "$ROOT"

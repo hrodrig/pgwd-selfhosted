@@ -1,0 +1,3 @@
+---
+# Non-login Ansible SSH often uses a short PATH; docker may live under /usr/bin (package) or /snap/bin.
+compose_docker_path_prefix: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"

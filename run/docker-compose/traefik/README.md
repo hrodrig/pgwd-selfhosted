@@ -20,6 +20,8 @@ docker compose --env-file "${PGWD_HOST_DATA}/.env" -f run/docker-compose/traefik
 
 Ensure DNS for `PGWD_HOSTNAME` points to this host and **80/443** are reachable for ACME.
 
+**Notifiers vs dry-run:** this compose defaults **`PGWD_DRY_RUN=false`**. You must set **`PGWD_NOTIFICATIONS_SLACK_WEBHOOK`** and/or **`PGWD_NOTIFICATIONS_LOKI_URL`**, or set **`PGWD_DRY_RUN=true`** in **`.env`**, or pgwd will exit and the container will restart in a loop (same rule as upstream pgwd).
+
 Optional **Prometheus / Grafana / Loki**: **[`run/docker-compose/observability/`](../observability/README.md)** (start this Traefik stack first so `pgwd_edge` exists).
 
 For a **simpler** single-service stack (host port to pgwd), use **[`../minimal/`](../minimal/README.md)**.

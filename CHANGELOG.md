@@ -7,6 +7,17 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Compose — pgwd validation:** **minimal** stack defaults **`PGWD_DRY_RUN=true`** when unset so empty Slack/Loki does not cause a container **restart loop**. **Traefik** stack defaults **`PGWD_DRY_RUN=false`** — set **`PGWD_DRY_RUN=true`** or configure notifiers in **`.env`**. **`run/common/.env.example`**, minimal README, and Ansible **`env.compose.j2`** updated accordingly.
+- **Ansible notification test:** **`docker exec -e PGWD_DRY_RUN=false`** so **`-force-notification`** still hits the mock when the long-running container uses dry-run (inherited env would otherwise skip sends).
+- **`run/scripts/compose-stack.sh`** (stack **minimal**): if **`.env`** has no **`PGWD_DRY_RUN`** line and the shell variable is unset, **`export PGWD_DRY_RUN=true`** before **`docker compose`** so interpolation always enables dry-run without notifiers (helps hosts on an older `docker-compose.yml` missing the default).
+- Root **`Makefile`**: bare **`make`** prints **help** only; run **`make test-compose-platforms`** explicitly for Ansible (avoids accidental full-cycle runs).
+
+### Added
+
+- **`testing/platforms/`** — Ansible playbooks (setup → minimal **compose** up → **healthz** → **per-host notification mock** + **`docker exec … -force-notification`** → teardown) and **`make test-compose-platforms`** for validating **Compose** on many VPS in parallel, analogous to **pgwd** **`make test-platforms`** but for **`run/docker-compose/minimal`**. See **[`testing/platforms/README.md`](testing/platforms/README.md)**; **`inventory/hosts.yml`** is gitignored (copy **`hosts.yml.example`**).
+
 ### Documentation
 
 - **Docker / Compose:** [`run/docker-compose/README.md`](run/docker-compose/README.md) index; [`run/docker/README.md`](run/docker/README.md) one-shot **`docker run --rm`** with **`PGWD_INTERVAL=0`**; cross-links minimal / Traefik / observability / standalone cron; root README and [`run/README.md`](run/README.md); [`run/common/.env.example`](run/common/.env.example) points at compose index.

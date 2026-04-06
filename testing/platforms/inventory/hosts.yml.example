@@ -1,0 +1,60 @@
+# Copy to hosts.yml (gitignored) and set real hosts, URLs, and paths.
+#
+# Run from repo root: make test-compose-platforms
+# Or: cd testing/platforms && ansible-playbook playbooks/full-cycle.yml
+#
+# Prerequisites on each host: Docker Engine + docker compose plugin; reachable PostgreSQL for pgwd_db_url.
+
+all:
+  vars:
+    # Git ref to checkout on targets (branch, tag, or commit).
+    pgwd_compose_repo_version: develop
+    pgwd_compose_repo_url: https://github.com/hrodrig/pgwd-selfhosted.git
+    pgwd_compose_repo_dest: /opt/pgwd-selfhosted
+
+    # Published ghcr.io/hrodrig/pgwd tag (application version).
+    pgwd_image_version: v0.5.10
+
+    # Host port mapped to container 8080 (healthz/metrics).
+    pgwd_host_port: 8080
+
+    # Python mock for Slack + Loki on each VPS (same idea as pgwd test-platforms).
+    # Must be free on the host; container reaches it via the Docker bridge gateway.
+    notification_mock_port: 9999
+
+    # Shared database URL for all hosts (override per host if needed).
+    pgwd_db_url: postgres://pgwd:REPLACE@10.0.0.50:5432/pgwd?sslmode=disable
+
+    # true = PGWD_DRY_RUN in generated .env (no Slack/Loki required for the long-running container).
+    # Set false when pgwd_notifications_* are set and you want real alerts from the daemon.
+    # pgwd_dry_run: true
+
+    # Directory on the VM: holds .env and SQLite volume mount target.
+    pgwd_host_data: /var/lib/pgwd-compose
+
+  children:
+    compose_vps:
+      hosts:
+        vps-debian:
+          ansible_host: 203.0.113.10
+          ansible_port: 2201
+          ansible_user: root
+          platform_vars: debian
+        vps-ubuntu:
+          ansible_host: 203.0.113.10
+          ansible_port: 2202
+          ansible_user: root
+          platform_vars: ubuntu
+        vps-almalinux:
+          ansible_host: 203.0.113.10
+          ansible_port: 2203
+          ansible_user: root
+          platform_vars: almalinux
+        # Add remaining VPS (up to ~12) with unique ansible_port or ansible_host.
+        # For *BSD, set ansible_python_interpreter, e.g.:
+        # vps-freebsd:
+        #   ansible_host: 203.0.113.11
+        #   ansible_port: 22
+        #   ansible_user: root
+        #   ansible_python_interpreter: /usr/local/bin/python3
+        #   pgwd_db_url: postgres://...

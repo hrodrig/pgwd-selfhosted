@@ -1,0 +1,8 @@
+---
+- name: pgwd-selfhosted compose setup
+  hosts: all
+  gather_facts: true
+  become: true
+
+  roles:
+    - pgwd_compose_prepare

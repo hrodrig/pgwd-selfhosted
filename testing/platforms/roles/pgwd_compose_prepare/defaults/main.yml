@@ -1,0 +1,11 @@
+---
+pgwd_compose_repo_url: https://github.com/hrodrig/pgwd-selfhosted.git
+pgwd_compose_repo_dest: /opt/pgwd-selfhosted
+pgwd_compose_repo_version: develop
+pgwd_image_version: v0.5.10
+pgwd_host_port: 8080
+pgwd_client: pgwd-compose-ansible
+pgwd_interval: 60
+pgwd_log_level: info
+# true = start without Slack/Loki in .env; notification play still uses docker exec with explicit URLs.
+pgwd_dry_run: true

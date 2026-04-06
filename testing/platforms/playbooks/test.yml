@@ -1,0 +1,9 @@
+---
+- name: pgwd-selfhosted compose test
+  hosts: all
+  gather_facts: false
+  become: true
+
+  roles:
+    - pgwd_compose_test
+    - pgwd_compose_notifications

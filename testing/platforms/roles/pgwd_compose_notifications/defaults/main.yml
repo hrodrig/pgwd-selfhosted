@@ -1,0 +1,7 @@
+---
+compose_docker_path_prefix: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
+# TCP port on the host for the Python mock (container reaches host via Docker gateway IP).
+notification_mock_port: 9999
+# If docker inspect returns no gateway, try this (classic linux bridge).
+pgwd_compose_docker_host_fallback: "172.17.0.1"
+pgwd_compose_pgwd_container_name: pgwd

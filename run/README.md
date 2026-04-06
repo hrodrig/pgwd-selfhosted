@@ -29,6 +29,8 @@ Stacks: **`minimal`**, **`traefik`**, **`observability`**. Pass any Compose subc
 | [`kubernetes/helm/`](kubernetes/helm/) | **Helm** chart — install from the [published Helm repo](https://hrodrig.github.io/pgwd-selfhosted) when available; sources live here. |
 | [`kubernetes/manifests/`](kubernetes/manifests/) | Raw manifests — optional; see folder README. |
 
+**Batch test many VPS (Ansible):** after Docker is installed on each machine, use **[`testing/platforms/README.md`](../testing/platforms/README.md)** and **`make test-compose-platforms`** from the repository root (clone + **`.env`** + **minimal** stack **up** / **healthz** / **down**).
+
 Always use the **published image tag** that matches your desired [pgwd](https://github.com/hrodrig/pgwd) release (see `PGWD_VERSION` in [`run/common/.env.example`](common/.env.example)).
 
 ---

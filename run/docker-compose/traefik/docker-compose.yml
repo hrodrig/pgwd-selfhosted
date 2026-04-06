@@ -82,6 +82,8 @@ services:
       PGWD_CLIENT: ${PGWD_CLIENT:-pgwd-traefik}
       PGWD_INTERVAL: ${PGWD_INTERVAL:-60}
       PGWD_LOG_LEVEL: ${PGWD_LOG_LEVEL:-info}
+      # Must set notifiers and/or PGWD_DRY_RUN=true or pgwd exits (restart loop). Default false — configure webhooks or set true in .env.
+      PGWD_DRY_RUN: ${PGWD_DRY_RUN:-false}
       PGWD_HTTP_LISTEN: "0.0.0.0:8080"
       PGWD_SQLITE_PATH: /var/lib/pgwd/pgwd.db
       PGWD_NOTIFICATIONS_SLACK_WEBHOOK: ${PGWD_NOTIFICATIONS_SLACK_WEBHOOK:-}

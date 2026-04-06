@@ -26,6 +26,12 @@
 !run/
 !run/**
 
+# Ansible — Compose batch tests on real VPS (inventory is local)
+!Makefile
+!testing/
+!testing/**
+testing/platforms/inventory/hosts.yml
+
 # SQLite placeholder at repo root (DB files stay ignored below)
 !data/
 !data/.keep

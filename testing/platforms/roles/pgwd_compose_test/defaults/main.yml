@@ -1,0 +1,3 @@
+---
+# PATH fallback when ansible_facts.env.PATH is unset.
+compose_docker_path_prefix: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"

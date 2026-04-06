@@ -15,4 +15,4 @@ sources:
 maintainers:
   - name: Hermes Rodriguez
     url: https://github.com/hrodrig/pgwd
-kubeVersion: ">=1.19"
+kubeVersion: ">=1.28.0"

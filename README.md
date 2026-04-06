@@ -1,6 +1,6 @@
 # pgwd-selfhosted
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/hrodrig/pgwd-selfhosted/releases)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue)](https://github.com/hrodrig/pgwd-selfhosted/releases)
 [![Release](https://img.shields.io/github/v/release/hrodrig/pgwd-selfhosted?label=release)](https://github.com/hrodrig/pgwd-selfhosted/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![App image on GHCR](https://img.shields.io/badge/image-ghcr.io%2Fhrodrig%2Fpgwd-2496ED?logo=github)](https://github.com/hrodrig/pgwd/pkgs/container/pgwd)
@@ -228,19 +228,24 @@ docker compose --env-file "${PGWD_HOST_DATA}/.env.observability" -p pgwd-obs \
 
 ## Kubernetes Helm
 
-**Recommended:** install from the **Helm repository** on **GitHub Pages** ([**`index.yaml`**](https://hrodrig.github.io/pgwd-selfhosted/index.yaml); chart packages are attached to [GitHub Releases](https://github.com/hrodrig/pgwd-selfhosted/releases) as **`pgwd-<version>.tgz`**).
-
-**Alternative (app releases):** the **application** chart is also published as **OCI** on each [pgwd release](https://github.com/hrodrig/pgwd/releases): `oci://ghcr.io/hrodrig/pgwd/pgwd` (see upstream **[Helm README](https://github.com/hrodrig/pgwd/blob/main/contrib/helm/pgwd/README.md)**).
+**Install** from the **Helm repository** on **GitHub Pages** ([**`index.yaml`**](https://hrodrig.github.io/pgwd-selfhosted/index.yaml); chart packages are attached to [GitHub Releases](https://github.com/hrodrig/pgwd-selfhosted/releases) as **`pgwd-<version>.tgz`**). The chart is maintained and published **here**, not from the [pgwd](https://github.com/hrodrig/pgwd) application repository.
 
 **GitHub Pages:** The [Pages URL](https://hrodrig.github.io/pgwd-selfhosted/) serves **`index.yaml`** for Helm and includes a short **HTML landing** for humans. **`helm repo add`** only needs the HTTPS base URL — you do not have to open the site in a browser.
 
-**Naming (this repo vs the chart):** This GitHub repository is **`pgwd-selfhosted`** (deployment manifests only). The Helm chart lives under **`run/kubernetes/helm/pgwd/`** — **`pgwd`** is the **chart name** (see `name:` in **`Chart.yaml`**). Published chart packages use **`pgwd-<chart-version>.tgz`**; **Git tags** for this repo use **`v<semver>`** (e.g. **`v0.1.0`**) per **`VERSION`**.
+**Naming (this repo vs the chart):** This GitHub repository is **`pgwd-selfhosted`** (deployment manifests only). The Helm chart lives under **`run/kubernetes/helm/pgwd/`** — **`pgwd`** is the **chart name** (see `name:` in **`Chart.yaml`**). Published chart packages use **`pgwd-<chart-version>.tgz`**; **Git tags** for this repo use **`v<semver>`** (e.g. **`v0.1.1`**) per **`VERSION`**.
+
+Generate **`my-values.yaml`** from the published chart (defaults), **edit** it for your cluster (Postgres URL, Slack/Loki, **`image.tag`** to match a [pgwd release](https://github.com/hrodrig/pgwd/releases), resources, etc.), then install:
 
 ```bash
 helm repo add pgwd https://hrodrig.github.io/pgwd-selfhosted
 helm repo update
-helm install pgwd pgwd/pgwd -n pgwd --create-namespace -f my-values.yaml
+helm search repo pgwd -l
+helm show values pgwd/pgwd --version 0.1.0 > my-values.yaml
+# Edit my-values.yaml — do not commit secrets to git.
+helm install pgwd pgwd/pgwd --version 0.1.0 -n pgwd --create-namespace -f my-values.yaml
 ```
+
+Use the **`version:`** shown in **`helm search`** if it differs from **`0.1.0`**. Full options: [run/kubernetes/helm/pgwd/README.md](run/kubernetes/helm/pgwd/README.md).
 
 **Secrets (recommended):** do **not** put **`postgres://`** URLs or webhooks in shell history. Prefer **`secrets.existingSecret`** with keys **`url`**, **`slack-webhook`**, **`loki-url`** (see **`secrets`** in [`values.yaml`](run/kubernetes/helm/pgwd/values.yaml)):
 
@@ -255,15 +260,17 @@ kubectl create secret generic pgwd-secrets \
 
 Then in **`my-values.yaml`**: set **`secrets.create: false`**, **`secrets.existingSecret: pgwd-secrets`**, and keep **`env.PGWD_*`** for non-secret settings (interval, log level, HTTP listen, etc.).
 
-Use **`helm show values pgwd/pgwd`** (after `helm repo update`) or the in-tree **[`values.yaml`](run/kubernetes/helm/pgwd/values.yaml)**. You may use **`config.enabled: true`** for multiple databases (see chart **[README](run/kubernetes/helm/pgwd/README.md)**).
+You may use **`config.enabled: true`** for multiple databases (see chart **[README](run/kubernetes/helm/pgwd/README.md)**).
 
-If **`helm repo add`** fails (network, Pages outage, or first minutes after a new release), try again later, use **OCI** from GHCR, or install **from this repository** below.
+If **`helm repo add`** fails (network, Pages outage, or first minutes after a new release), try again later or install **from this repository** below.
 
 **From this repository (sources, templates, contributing):** the chart under **`run/kubernetes/helm/pgwd/`** is the same chart; clone it to inspect YAML, open issues, or install without the published repo:
 
 ```bash
 git clone https://github.com/hrodrig/pgwd-selfhosted.git
 cd pgwd-selfhosted
+helm show values ./run/kubernetes/helm/pgwd > my-values.yaml
+# Edit my-values.yaml — do not commit secrets to git.
 helm install pgwd ./run/kubernetes/helm/pgwd -n pgwd --create-namespace -f my-values.yaml
 ```
 

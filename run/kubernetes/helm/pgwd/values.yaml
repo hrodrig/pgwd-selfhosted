@@ -86,6 +86,11 @@ config:
 
 # Environment variables (used when config.enabled=false)
 # When config.enabled=true, env vars are IGNORED by pgwd; configure via config.extra instead.
+#
+# Paths below are inside the container. Aligns with Docker Compose in this repo: the host keeps state
+# outside the git clone (e.g. PGWD_HOST_DATA=/home/pgwd/pgwd-data) and bind-mounts it to /var/lib/pgwd;
+# here, persistence.mountPath + PGWD_SQLITE_PATH use the same in-container layout. Override only if you
+# change the volume mount path in templates.
 env:
   PGWD_CLIENT: "pgwd-k8s"
   PGWD_INTERVAL: "60"

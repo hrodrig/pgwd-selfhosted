@@ -1,39 +1,43 @@
-# pgwd Helm Chart
+# Helm chart: pgwd
 
-Deploy [pgwd](https://github.com/hrodrig/pgwd) (Postgres Watch Dog) in Kubernetes to monitor PostgreSQL connection counts and notify via Slack/Loki.
+← [Back to run/README](../../../README.md).
+
+This chart installs **[pgwd](https://github.com/hrodrig/pgwd)** (Postgres Watch Dog) from the published container image — monitor PostgreSQL connection counts and notify via Slack/Loki.
+
+**Path vs repository name:** In a clone of **[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**, this chart lives under **`run/kubernetes/helm/pgwd/`**. The segment **`pgwd`** is the **Helm chart name** (matches **`name:`** in **`Chart.yaml`**) and the workload it deploys — not the GitHub repository name (**`pgwd-selfhosted`**). This mirrors **[gghstats-selfhosted](https://github.com/hrodrig/gghstats-selfhosted)** / **`run/kubernetes/helm/gghstats`**. Application source and binary releases remain in **[hrodrig/pgwd](https://github.com/hrodrig/pgwd)**.
+
+**Helm repo alias:** `helm repo add pgwd https://hrodrig.github.io/pgwd-selfhosted` uses **`pgwd`** as the local repo name so **`helm install … pgwd/pgwd`** reads as *repo/chart* — both refer to the **pgwd** product, not the `-selfhosted` repo name.
 
 ## Prerequisites
 
-- Helm 3.8+ (OCI support)
-- Kubernetes 1.19+
+- Helm 3
+- Kubernetes 1.28+ (see **`kubeVersion`** in **`Chart.yaml`**; CI validates manifests against 1.30 schemas)
 - PostgreSQL accessible from within the cluster (in-cluster DNS)
 
 ## Installation
 
+For any install that uses **`-f my-values.yaml`**, create that file from the chart defaults, then edit it for your cluster (database URL, Slack/Loki, resources, namespace, etc.):
+
+```bash
+helm show values <chart-reference> --version <version> > my-values.yaml
+# Edit my-values.yaml with your desired settings before helm install.
+```
+
+Helm’s **`--version`** is the **chart package** semver (see **`version:`** in **`Chart.yaml`**). This repo (**[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**) is the **canonical** home for the chart: it is published from here (GitHub Pages and/or release automation), not from the **[pgwd](https://github.com/hrodrig/pgwd)** application repo. The **container image** for pgwd remains **`ghcr.io/hrodrig/pgwd`** from [pgwd releases](https://github.com/hrodrig/pgwd/releases); set **`image.tag`** in values to match the binary you run.
+
 ### From pgwd-selfhosted (GitHub Pages)
 
-When this chart is published from **[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**:
+When this chart is published from **[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**, the packaged chart uses **`version:`** from this repo’s **`Chart.yaml`** (currently **`0.1.0`** — not the pgwd release number):
 
 ```bash
 helm repo add pgwd https://hrodrig.github.io/pgwd-selfhosted
 helm repo update
-helm install pgwd pgwd/pgwd -n pgwd --create-namespace -f my-values.yaml
+helm show values pgwd/pgwd --version 0.1.0 > my-values.yaml
+# Edit my-values.yaml for your environment.
+helm install pgwd pgwd/pgwd --version 0.1.0 -n pgwd --create-namespace -f my-values.yaml
 ```
 
-### From OCI registry (ghcr.io)
-
-Charts are published to GitHub Container Registry on each release. Install with:
-
-```bash
-helm install pgwd oci://ghcr.io/hrodrig/pgwd/pgwd --version 0.5.10
-```
-
-Or add the repo and install:
-
-```bash
-helm pull oci://ghcr.io/hrodrig/pgwd/pgwd --version 0.5.10
-helm install pgwd ./pgwd-0.5.10.tgz -f my-values.yaml
-```
+Confirm with `helm search repo pgwd -l` if the index lists a different chart version than **`0.1.0`**.
 
 ### From this repository (pgwd-selfhosted sources)
 
@@ -49,9 +53,9 @@ helm install pgwd ./run/kubernetes/helm/pgwd \
   --set env.PGWD_CLIENT="pgwd-prod"
 ```
 
-### From pgwd application sources (upstream)
+### From pgwd application sources (upstream, legacy)
 
-If you cloned **[pgwd](https://github.com/hrodrig/pgwd)** only:
+The **[pgwd](https://github.com/hrodrig/pgwd)** repo may still ship a copy under **`contrib/helm/pgwd`** until that tree is retired; **prefer this repository** for the maintained chart. If you only have a clone of **pgwd**:
 
 ```bash
 helm install pgwd ./contrib/helm/pgwd \

@@ -7,6 +7,11 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Documentation
+
+- **Docker / Compose:** [`run/docker-compose/README.md`](run/docker-compose/README.md) index; [`run/docker/README.md`](run/docker/README.md) one-shot **`docker run --rm`** with **`PGWD_INTERVAL=0`**; cross-links minimal / Traefik / observability / standalone cron; root README and [`run/README.md`](run/README.md); [`run/common/.env.example`](run/common/.env.example) points at compose index.
+- **`run/scripts/compose-stack.sh`** — wrapper for **`docker compose`** on **minimal**, **Traefik**, and **observability** (`--env-file`, **`-f`**, project **`pgwd-obs`**); **`--traefik`** for the Grafana overlay. **[`run/scripts/README.md`](run/scripts/README.md)**; links from **`run/README.md`**, root **README**, **`docker-compose/README.md`**, and per-stack READMEs.
+
 ## [0.1.2] - 2026-04-06
 
 ### Changed

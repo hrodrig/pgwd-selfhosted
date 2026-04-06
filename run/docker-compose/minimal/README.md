@@ -1,8 +1,10 @@
 # Minimal Compose
 
-← [Back to run/README](../../README.md).
+← [Back to run/README](../../README.md) · [Compose index](../README.md).
 
-Single **pgwd** service using the **GHCR image**. Set **`PGWD_HOST_DATA`** in **`${PGWD_HOST_DATA}/.env`** to a **host directory** for SQLite (recommended: absolute path, e.g. `/home/pgwd/pgwd-data`). If **`PGWD_HOST_DATA`** is unset in the env file you pass to Compose, the stack bind-mounts the repo’s **`data/`** (tracked empty via **`data/.keep`**; other files under **`data/`** are gitignored — see root `.gitignore`).
+**Shortcut:** [`run/scripts/compose-stack.sh`](../../scripts/compose-stack.sh) — e.g. **`./run/scripts/compose-stack.sh minimal up -d`** (same `--env-file` / `-f` as below).
+
+Single **pgwd** service using the **GHCR image**. For **HTTPS + domain**, use **[`../traefik/`](../traefik/)** instead. For **`docker run`** without Compose, see **[`run/docker/`](../../docker/README.md)**. Set **`PGWD_HOST_DATA`** in **`${PGWD_HOST_DATA}/.env`** to a **host directory** for SQLite (recommended: absolute path, e.g. `/home/pgwd/pgwd-data`). If **`PGWD_HOST_DATA`** is unset in the env file you pass to Compose, the stack bind-mounts the repo’s **`data/`** (tracked empty via **`data/.keep`**; other files under **`data/`** are gitignored — see root `.gitignore`).
 
 From the **repository root**:
 
@@ -22,6 +24,8 @@ docker compose --env-file "${PGWD_HOST_DATA}/.env" -f run/docker-compose/minimal
 ```
 
 For **HTTPS and a public hostname**, use **[`run/docker-compose/traefik/`](../traefik/)** instead.
+
+**Defaults:** the Compose file sets **`PGWD_HTTP_LISTEN=0.0.0.0:8080`** and publishes **`PGWD_HOST_PORT`** (default **8080**) for health and **`/api/pgwd/v1/metrics`**. To avoid exposing HTTP entirely, this layout is not ideal (use **[one-shot `docker run`](../../docker/README.md#one-shot-container-no-daemon)** or **[standalone cron](../../standalone/README.md#cron--one-shot-no-daemon-no-http)**); override **`PGWD_INTERVAL`** in **`.env`** only if you understand interaction with **`restart: unless-stopped`** (interval **0** makes the process exit; the container may restart in a loop).
 
 ---
 

@@ -1,6 +1,6 @@
 # Docker (`docker run`)
 
-← [Back to run/README](../README.md).
+← [Back to run/README](../README.md) · [Compose](../docker-compose/README.md).
 
 Run the published image without Compose. Use the same **host directory** idea as in **`run/common/.env.example`**: set **`PGWD_HOST_DATA`** to an **absolute path** on the server (SQLite and optional `.env` colocation).
 
@@ -33,7 +33,25 @@ docker stop pgwd && docker rm pgwd
 
 For **all** environment variables supported by the binary/container, see the upstream **[README](https://github.com/hrodrig/pgwd/blob/main/README.md)** and **`contrib/pgwd.conf.example`** on **`main`**.
 
-For **Compose-based** setups (persistent layout, Traefik, observability), use **`run/docker-compose/`** instead.
+For **Compose-based** setups (persistent layout, Traefik, observability), use **[`run/docker-compose/README.md`](../docker-compose/README.md)**.
+
+### One-shot container (no daemon)
+
+For a **single run** then exit (e.g. from **cron** on the host), use **`--rm`** and **`PGWD_INTERVAL=0`**. Omit **`-p`** and **`PGWD_HTTP_LISTEN`** if you do **not** want an HTTP listener inside the container.
+
+```bash
+export PGWD_HOST_DATA=/home/pgwd/pgwd-data
+mkdir -p "$PGWD_HOST_DATA"
+
+docker run --rm \
+  -e PGWD_INTERVAL=0 \
+  -e PGWD_DB_URL='postgres://user:pass@host:5432/dbname?sslmode=disable' \
+  -e PGWD_SQLITE_PATH=/var/lib/pgwd/pgwd.db \
+  -v "${PGWD_HOST_DATA}:/var/lib/pgwd" \
+  ghcr.io/hrodrig/pgwd:v0.5.10
+```
+
+Add notifier env vars as needed. Same **cron / no HTTP** ideas as **[standalone](../standalone/README.md#cron--one-shot-no-daemon-no-http)**.
 
 ---
 

@@ -43,7 +43,7 @@ Deployment manifests for **[pgwd](https://github.com/hrodrig/pgwd)** — Compose
 | **Prometheus / Grafana / Loki** (after Traefik) | [Observability optional](#observability-optional) |
 | **Kubernetes** | [Kubernetes Helm](#kubernetes-helm) |
 
-Shared env template for Compose: copy **[`run/common/.env.example`](run/common/.env.example)** to **`${PGWD_HOST_DATA}/.env`**, set **`PGWD_HOST_DATA`** inside that file, and pass **`--env-file "${PGWD_HOST_DATA}/.env"`** to Compose. Deeper walkthroughs: **[`run/README.md`](run/README.md)**.
+Shared env template for Compose: copy **[`run/common/.env.example`](run/common/.env.example)** to **`${PGWD_HOST_DATA}/.env`**, set **`PGWD_HOST_DATA`** inside that file, and pass **`--env-file "${PGWD_HOST_DATA}/.env"`** to Compose. **Which Compose file?** **[`run/docker-compose/README.md`](run/docker-compose/README.md)**. Optional: **[`run/scripts/compose-stack.sh`](run/scripts/compose-stack.sh)** (`--help`). Deeper walkthroughs: **[`run/README.md`](run/README.md)**.
 
 **[↑ Contents](#table-of-contents)**
 
@@ -96,9 +96,9 @@ docker run -d \
   ghcr.io/hrodrig/pgwd:v0.5.10
 ```
 
-Use an image tag that exists on GHCR ([releases](https://github.com/hrodrig/pgwd/releases)); match **`PGWD_VERSION`** in [`run/common/.env.example`](run/common/.env.example). See also **[`run/docker/README.md`](run/docker/README.md)** for a fuller **`docker run`** example.
+Use an image tag that exists on GHCR ([releases](https://github.com/hrodrig/pgwd/releases)); match **`PGWD_VERSION`** in [`run/common/.env.example`](run/common/.env.example). See **[`run/docker/README.md`](run/docker/README.md)** for **`PGWD_INTERVAL`**, optional notifiers, and **[one-shot / `--rm`](run/docker/README.md#one-shot-container-no-daemon)**. **[Compose index](run/docker-compose/README.md)** when you need minimal / Traefik / observability.
 
-**Check:** `curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/api/pgwd/v1/healthz` (expect **`200`**).
+**Check:** with HTTP enabled, `curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/api/pgwd/v1/healthz` (expect **`200`**).
 
 **Remove:**
 
@@ -106,7 +106,7 @@ Use an image tag that exists on GHCR ([releases](https://github.com/hrodrig/pgwd
 docker stop pgwd && docker rm pgwd
 ```
 
-**More:** [run/docker/README.md](run/docker/README.md)
+**More:** [run/docker/README.md](run/docker/README.md) · [Compose layouts](run/docker-compose/README.md)
 
 **[↑ Contents](#table-of-contents)**
 
@@ -135,7 +135,7 @@ docker compose --env-file "${PGWD_HOST_DATA}/.env" -f run/docker-compose/minimal
 docker compose --env-file "${PGWD_HOST_DATA}/.env" -f run/docker-compose/minimal/docker-compose.yml down
 ```
 
-**More:** [run/docker-compose/minimal/README.md](run/docker-compose/minimal/README.md)
+**More:** [run/docker-compose/minimal/README.md](run/docker-compose/minimal/README.md) · [Compose index](run/docker-compose/README.md)
 
 **[↑ Contents](#table-of-contents)**
 
@@ -167,7 +167,7 @@ docker compose --env-file "${PGWD_HOST_DATA}/.env" -f run/docker-compose/traefik
 docker compose --env-file "${PGWD_HOST_DATA}/.env" -f run/docker-compose/traefik/docker-compose.yml down
 ```
 
-**More:** [run/docker-compose/traefik/README.md](run/docker-compose/traefik/README.md)
+**More:** [run/docker-compose/traefik/README.md](run/docker-compose/traefik/README.md) · [Compose index](run/docker-compose/README.md)
 
 **[↑ Contents](#table-of-contents)**
 
@@ -211,7 +211,7 @@ docker compose --env-file "${PGWD_HOST_DATA}/.env.observability" -p pgwd-obs \
   -f run/docker-compose/observability/docker-compose.observability.yml up -d
 ```
 
-**Check / troubleshoot / SSH tunnel:** **[run/docker-compose/observability/README.md](run/docker-compose/observability/README.md)** (curl checks, `down -v`).
+**Check / troubleshoot / SSH tunnel:** **[run/docker-compose/observability/README.md](run/docker-compose/observability/README.md)** (curl checks, `down -v`). **Compose overview:** [run/docker-compose/README.md](run/docker-compose/README.md).
 
 **Remove (containers + stack volumes):** use the **same** `-f` list you used for `up`. Examples:
 
@@ -299,7 +299,7 @@ helm uninstall pgwd -n pgwd
 
 *Recommended on servers:* colocate SQLite and env files outside the clone (see below).
 
-Keep **SQLite**, **`${PGWD_HOST_DATA}/.env`**, and **`${PGWD_HOST_DATA}/.env.observability`** in one host directory (e.g. `/home/pgwd/pgwd-data/`). Set **`PGWD_HOST_DATA`** inside the main **`.env`** to that absolute path. Run Compose from the clone root with **`--env-file "${PGWD_HOST_DATA}/.env"`** for the app stacks and **`--env-file "${PGWD_HOST_DATA}/.env.observability"`** for observability (`-p pgwd-obs`). See [`run/common/.env.example`](run/common/.env.example) and [`run/docker-compose/observability/observability.env.example`](run/docker-compose/observability/observability.env.example).
+Keep **SQLite**, **`${PGWD_HOST_DATA}/.env`**, and **`${PGWD_HOST_DATA}/.env.observability`** in one host directory (e.g. `/home/pgwd/pgwd-data/`). Set **`PGWD_HOST_DATA`** inside the main **`.env`** to that absolute path. Run Compose from the clone root with **`--env-file "${PGWD_HOST_DATA}/.env"`** for the app stacks and **`--env-file "${PGWD_HOST_DATA}/.env.observability"`** for observability (`-p pgwd-obs`). See [`run/common/.env.example`](run/common/.env.example) and [`run/docker-compose/observability/observability.env.example`](run/docker-compose/observability/observability.env.example). Optional helper: **[`run/scripts/compose-stack.sh`](run/scripts/compose-stack.sh)** (`./run/scripts/compose-stack.sh --help`).
 
 **[↑ Contents](#table-of-contents)**
 
@@ -310,9 +310,11 @@ Keep **SQLite**, **`${PGWD_HOST_DATA}/.env`**, and **`${PGWD_HOST_DATA}/.env.obs
 ```text
 run/
 ├── common/.env.example          # Shared vars for Compose + image tag
+├── scripts/                     # compose-stack.sh (docker compose helper)
 ├── standalone/README.md         # Index; linux, macos, windows, solaris/, bsd/{freebsd,openbsd,netbsd,dragonfly}/
 ├── docker/                      # docker run
 ├── docker-compose/
+│   ├── README.md            # minimal vs traefik vs observability
 │   ├── minimal/
 │   ├── traefik/
 │   └── observability/

@@ -1,6 +1,8 @@
 # Observability
 
-← [Back to run/README](../../README.md).
+← [Back to run/README](../../README.md) · [Compose index](../README.md).
+
+**Shortcut:** [`run/scripts/compose-stack.sh`](../../scripts/compose-stack.sh) — e.g. **`./run/scripts/compose-stack.sh observability up -d`**, or **`./run/scripts/compose-stack.sh --traefik observability up -d`** when using the [Traefik overlay for Grafana](#grafana-behind-traefik-https-public-hostname).
 
 This documentation lives in **[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)** under **`run/docker-compose/observability/`**. Command examples assume **`docker compose` is run from the repository root** unless noted otherwise.
 

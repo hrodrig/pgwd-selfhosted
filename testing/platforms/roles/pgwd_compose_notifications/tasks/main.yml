@@ -92,6 +92,14 @@
           - "'pgwd' in (loki_content.content | b64decode)"
         fail_msg: "Loki capture missing 'pgwd': {{ loki_content.content | b64decode }}"
 
+    - name: Assert Loki capture is not a Postgres connect_failure event
+      ansible.builtin.assert:
+        that:
+          - "'connect_failure' not in (loki_content.content | b64decode)"
+        fail_msg: >-
+          Loki payload indicates connect_failure (Postgres unreachable or wrong PGWD_DB_URL for this host).
+          Fix worker → DB TCP (route, firewall, listen_addresses, pg_hba). Decode: {{ loki_content.content | b64decode }}
+
     - name: Show Loki capture JSON received by mock
       ansible.builtin.debug:
         msg: "{{ (loki_content.content | b64decode | trim | from_json) | to_nice_json }}"
@@ -118,6 +126,14 @@
         that:
           - "'pgwd' in (slack_content.content | b64decode)"
         fail_msg: "Slack capture missing 'pgwd': {{ slack_content.content | b64decode }}"
+
+    - name: Assert Slack capture is not a Postgres connection failure notification
+      ansible.builtin.assert:
+        that:
+          - "'could not connect to Postgres' not in (slack_content.content | b64decode)"
+        fail_msg: >-
+          Slack payload indicates Postgres connection failure. Fix worker → DB TCP or credentials.
+          Decode: {{ slack_content.content | b64decode }}
 
     - name: Show Slack capture JSON received by mock
       ansible.builtin.debug:

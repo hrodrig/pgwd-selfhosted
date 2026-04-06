@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Ansible notification test:** fail the play when **`-force-notification`** produces **`connect_failure`** / “could not connect to Postgres” in mock captures (Loki + Slack), not only when payloads contain **`pgwd`**.
 - **Compose image:** **`PGWD_IMAGE`** optional full reference in **`.env`**; **`minimal`** and **`Traefik`** use **`${PGWD_IMAGE:-ghcr.io/hrodrig/pgwd:${PGWD_VERSION:-v0.5.10}}`**. Ansible template and **`hosts.yml.example`** support **`pgwd_image`**; **`run/common/.env.example`** and compose index README updated.
 - **Compose — pgwd validation:** **minimal** stack defaults **`PGWD_DRY_RUN=true`** when unset so empty Slack/Loki does not cause a container **restart loop**. **Traefik** stack defaults **`PGWD_DRY_RUN=false`** — set **`PGWD_DRY_RUN=true`** or configure notifiers in **`.env`**. **`run/common/.env.example`**, minimal README, and Ansible **`env.compose.j2`** updated accordingly.
 - **Ansible notification test:** **`docker exec -e PGWD_DRY_RUN=false`** so **`-force-notification`** still hits the mock when the long-running container uses dry-run (inherited env would otherwise skip sends).
@@ -21,7 +22,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
-- **`testing/platforms/README.md`** — **Troubleshooting:** (1) Docker daemon / **DOCKER** NAT chain and kernel vs **`/lib/modules`** mismatch on **Arch** (reboot, **`nf_tables`**, reinstall **`iptables`**). (2) **`docker compose`** network create: **`DOCKER-FORWARD`** / **`No chain/target/match by that name`** — **`br_netfilter`**, **`bridge-nf-call-iptables`**, **`docker` restart**, verify iptables backend.
+- **`testing/platforms/README.md`** — **Troubleshooting:** (1) Docker daemon / **DOCKER** NAT chain and kernel vs **`/lib/modules`** mismatch on **Arch** (reboot, **`nf_tables`**, reinstall **`iptables`**). (2) **`docker compose`** network create: **`DOCKER-FORWARD`** / **`No chain/target/match by that name`** — **`br_netfilter`**, **`bridge-nf-call-iptables`**, **`docker` restart**, verify iptables backend. (3) **Arch rolling** — **nft vs legacy** warning, inspect **`br-`** rules **with Compose up**, **Postgres** checks are not Arch-specific.
 - **Docker / Compose:** [`run/docker-compose/README.md`](run/docker-compose/README.md) index; [`run/docker/README.md`](run/docker/README.md) one-shot **`docker run --rm`** with **`PGWD_INTERVAL=0`**; cross-links minimal / Traefik / observability / standalone cron; root README and [`run/README.md`](run/README.md); [`run/common/.env.example`](run/common/.env.example) points at compose index.
 - **`run/scripts/compose-stack.sh`** — wrapper for **`docker compose`** on **minimal**, **Traefik**, and **observability** (`--env-file`, **`-f`**, project **`pgwd-obs`**); **`--traefik`** for the Grafana overlay. **[`run/scripts/README.md`](run/scripts/README.md)**; links from **`run/README.md`**, root **README**, **`docker-compose/README.md`**, and per-stack READMEs.
 

@@ -81,6 +81,8 @@ Optional: **`pgwd_compose_repo_version`** (branch/tag, default `develop`), **`pg
 
 The **`.env`** template may leave Slack/Loki empty; the notification test passes URLs on the **`docker exec`** command line (no shared notifications VPS).
 
+The **notification** tasks assert that **`force-notification`** did not emit a **`connect_failure`** payload (Loki `threshold` / Slack “could not connect to Postgres”). If **`pgwd_db_url`** is wrong or the target host cannot open **TCP 5432** to Postgres, the play **fails** even though the mock received HTTP posts.
+
 ## Troubleshooting
 
 ### Docker daemon fails: `nftables` / `iptables` / `DOCKER` NAT chain (Arch Linux and similar)
@@ -133,6 +135,14 @@ That usually means the **filter** table rules Docker expects (notably the **`DOC
 5. Re-run **`docker compose`** (or the Ansible play).
 
 If it still fails, capture **`journalctl -xeu docker.service -n 60`** from right after `systemctl restart docker` and verify **`lsmod | grep br_netfilter`** on the host.
+
+### Arch Linux (rolling) — Docker iptables and diagnostics
+
+**This is not “Arch is broken”:** other distributions can hit the same **kernel vs modules**, **nft/legacy**, and **bridge** issues. **Arch Linux** ships a **rolling kernel** and minimal base images, so you see these patterns often if **`linux` is upgraded but the host is not rebooted**, or if **iptables-legacy** and **nft** are mixed.
+
+- **`iptables: Warning: iptables-legacy tables present`:** some rules may live in the **legacy** path and others in **nft**. Compare **`sudo iptables-legacy -t filter -S`**, **`sudo iptables-nft -t filter -S`** (or plain **`iptables -S`** on Arch), and **`sudo nft list ruleset`**. Avoid permanently symlinking **`/usr/bin/iptables`** to **legacy** unless you intend to; reinstall the **`iptables`** package to restore defaults after experiments.
+- **`br-…` rules “missing” in `iptables`:** user-defined Compose networks create a **`br-xxxxxxxx`** interface. If **`docker compose`** / **`minimal`** is **not** running (or teardown removed the network), **`docker network ls`** will only show **`bridge` / `host` / `none`** and **`ip link`** may only show **`docker0`**. That is **expected** — it does not prove a firewall bug. Inspect **`iptables -t filter -S | grep br-`** **while** **`compose-stack.sh minimal up -d`** (or equivalent) is active.
+- **Postgres `connect_failure` from pgwd:** treat as **reachability or auth** (TCP to **`pgwd_db_url`**, `listen_addresses`, **`pg_hba.conf`**, password, **`sslmode`**). Prove path from the host **`nc -zv host 5432`** (install **`openbsd-netcat`** on Arch if needed, or use **`bash` `/dev/tcp`**) and from inside the container **`docker exec pgwd …`**. A working **`pg_hba`** for the subnet does not replace a **timeout** at the TCP layer.
 
 ## Relationship to pgwd `test-platforms`
 

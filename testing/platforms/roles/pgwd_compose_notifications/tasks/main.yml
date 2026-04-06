@@ -92,6 +92,11 @@
           - "'pgwd' in (loki_content.content | b64decode)"
         fail_msg: "Loki capture missing 'pgwd': {{ loki_content.content | b64decode }}"
 
+    - name: Show Loki capture JSON received by mock
+      ansible.builtin.debug:
+        msg: "{{ (loki_content.content | b64decode | trim | from_json) | to_nice_json }}"
+      when: pgwd_compose_show_mock_captures | default(true)
+
     - name: Check Slack capture file exists
       ansible.builtin.stat:
         path: /tmp/pgwd-mock-slack.json
@@ -113,6 +118,11 @@
         that:
           - "'pgwd' in (slack_content.content | b64decode)"
         fail_msg: "Slack capture missing 'pgwd': {{ slack_content.content | b64decode }}"
+
+    - name: Show Slack capture JSON received by mock
+      ansible.builtin.debug:
+        msg: "{{ (slack_content.content | b64decode | trim | from_json) | to_nice_json }}"
+      when: pgwd_compose_show_mock_captures | default(true)
 
   always:
     - name: Stop notification mock on host

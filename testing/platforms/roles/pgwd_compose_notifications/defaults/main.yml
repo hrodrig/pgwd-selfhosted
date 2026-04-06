@@ -5,3 +5,5 @@ notification_mock_port: 9999
 # If docker inspect returns no gateway, try this (classic linux bridge).
 pgwd_compose_docker_host_fallback: "172.17.0.1"
 pgwd_compose_pgwd_container_name: pgwd
+# When true, print pretty JSON bodies captured by the notification mock (Loki + Slack).
+pgwd_compose_show_mock_captures: true

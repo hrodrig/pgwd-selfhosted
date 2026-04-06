@@ -77,7 +77,7 @@ Copy **`inventory/hosts.yml.example`** to **`inventory/hosts.yml`** (the latter 
 - **`pgwd_db_url`** — Postgres URL for the container (`PGWD_DB_URL`)
 - **`pgwd_host_data`** — host directory for **`.env`** and SQLite bind-mount (e.g. `/var/lib/pgwd-compose`). After setup, Ansible sets **owner/group** to **`pgwd_container_uid` / `pgwd_container_gid`** (default **1000:1000**) so the container user can write **`pgwd.db`**. Override those if your image runs as another UID (check with `docker run --rm --entrypoint id <image>`).
 
-Optional: **`pgwd_compose_repo_version`** (branch/tag, default `develop`), **`pgwd_image_version`** (image tag, default `v0.5.10`), **`pgwd_host_port`**, **`notification_mock_port`** (default **9999**), **`pgwd_compose_docker_host_fallback`** if `docker inspect` does not report a gateway.
+Optional: **`pgwd_compose_repo_version`** (branch/tag, default `develop`), **`pgwd_image_version`** (image tag, default `v0.5.10`), **`pgwd_host_port`**, **`notification_mock_port`** (default **9999**), **`pgwd_compose_docker_host_fallback`** if `docker inspect` does not report a gateway. Set **`pgwd_compose_show_mock_captures`** to **`false`** to skip printing the Loki/Slack JSON bodies captured by the mock (default **true**).
 
 The **`.env`** template may leave Slack/Loki empty; the notification test passes URLs on the **`docker exec`** command line (no shared notifications VPS).
 

@@ -81,6 +81,59 @@ Optional: **`pgwd_compose_repo_version`** (branch/tag, default `develop`), **`pg
 
 The **`.env`** template may leave Slack/Loki empty; the notification test passes URLs on the **`docker exec`** command line (no shared notifications VPS).
 
+## Troubleshooting
+
+### Docker daemon fails: `nftables` / `iptables` / `DOCKER` NAT chain (Arch Linux and similar)
+
+If `docker.service` exits during **network controller** setup, the journal may show:
+
+- `netlink: Error: cache initialization failed: Invalid argument`
+- `iptables ... (nf_tables): Could not fetch rule set generation id: Invalid argument`
+- `failed to create NAT chain DOCKER`
+
+**Often the running kernel does not match the module tree on disk** (e.g. you ran `pacman -S linux` but did not reboot yet). While still on the **old** kernel, `/lib/modules/$(uname -r)` may be missing modules; `modprobe nf_tables` can report **Module not found** even though the **new** `linux` package is already installed.
+
+**Fix:**
+
+1. **Reboot** so the loaded kernel matches `/lib/modules/$(uname -r)` (they should report the same version, e.g. `6.19.11-arch1-1`).
+2. Confirm modules: `sudo modprobe nf_tables` and `lsmod | grep nf_tables`.
+3. If you temporarily pointed `/usr/bin/iptables` at **iptables-legacy** for debugging, **reinstall** the `iptables` package so the default **nftables** backend is restored (Docker expects a consistent iptables/nft stack), e.g.  
+   `sudo pacman -Syu --overwrite='/usr/bin/iptables,/usr/bin/ip6tables' iptables`
+4. `sudo systemctl reset-failed docker && sudo systemctl start docker` and `sudo docker run --rm hello-world`.
+
+This class of failure can appear on **KVM VMs** as well as bare metal; it is not specific to LXC. The important check is **kernel version in memory == module directory on disk** after every kernel upgrade.
+
+### `docker compose up` fails: `DOCKER-FORWARD` / `No chain/target/match by that name`
+
+The daemon may be running and `docker run hello-world` can still succeed on the **default** bridge, but **creating a compose network** (a non-default bridge such as `minimal_default`) can fail with:
+
+- `Failed to Setup IP tables: Unable to enable ACCEPT OUTGOING rule`
+- `iptables ... -A DOCKER-FORWARD -i br-... -j ACCEPT: iptables: No chain/target/match by that name`
+
+That usually means the **filter** table rules Docker expects (notably the **`DOCKER-FORWARD`** chain or the bridge/netfilter path) are missing or inconsistent—often right after a **kernel/iptables** change without a clean **docker** restart, or when **`br_netfilter`** / **`bridge-nf-call-iptables`** is not set for bridge traffic.
+
+**Fix (try in order):**
+
+1. Confirm a single iptables backend: `readlink -f /usr/bin/iptables` should resolve to the **nftables** multicall binary (e.g. `xtables-nft-multi`), not a leftover **legacy** symlink. Reinstall `iptables` from the distro if unsure (see the subsection above).
+2. Load bridge netfilter and enable forwarding (typical for Docker bridge + iptables):
+
+   ```bash
+   sudo modprobe br_netfilter
+   echo 'net.bridge.bridge-nf-call-iptables = 1' | sudo tee /etc/sysctl.d/99-docker-bridge.conf
+   echo 'net.bridge.bridge-nf-call-ip6tables = 1' | sudo tee -a /etc/sysctl.d/99-docker-bridge.conf
+   echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-docker-bridge.conf
+   sudo sysctl --system
+   ```
+
+   On Arch you can also persist the module: `echo br_netfilter | sudo tee /etc/modules-load.d/br_netfilter.conf`.
+
+3. **Restart Docker** so it recreates iptables chains:  
+   `sudo systemctl restart docker`
+4. Check that the filter chains exist: `sudo iptables -t filter -S | grep -E 'DOCKER|FORWARD'` (you should see **`DOCKER-FORWARD`** and related rules after a healthy start).
+5. Re-run **`docker compose`** (or the Ansible play).
+
+If it still fails, capture **`journalctl -xeu docker.service -n 60`** from right after `systemctl restart docker` and verify **`lsmod | grep br_netfilter`** on the host.
+
 ## Relationship to pgwd `test-platforms`
 
 - **pgwd** exercises the **bare-metal** install story per OS family.

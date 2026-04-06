@@ -1,6 +1,6 @@
 # pgwd-selfhosted
 
-[![Version](https://img.shields.io/badge/version-0.1.1-blue)](https://github.com/hrodrig/pgwd-selfhosted/releases)
+[![Version](https://img.shields.io/badge/version-0.1.2-blue)](https://github.com/hrodrig/pgwd-selfhosted/releases)
 [![Release](https://img.shields.io/github/v/release/hrodrig/pgwd-selfhosted?label=release)](https://github.com/hrodrig/pgwd-selfhosted/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![App image on GHCR](https://img.shields.io/badge/image-ghcr.io%2Fhrodrig%2Fpgwd-2496ED?logo=github)](https://github.com/hrodrig/pgwd/pkgs/container/pgwd)
@@ -54,9 +54,12 @@ Shared env template for Compose: copy **[`run/common/.env.example`](run/common/.
 **Goal:** run the app without Docker.
 
 1. Download a release asset for your OS/arch from **[pgwd Releases](https://github.com/hrodrig/pgwd/releases)**.
-2. Extract the binary, then:
+2. Extract the binary. Prefer **state outside the download folder** — same idea as Compose **`PGWD_HOST_DATA`** (e.g. **`/home/pgwd/pgwd-data`** or **`${HOME}/pgwd-data`**):
 
 ```bash
+export PGWD_HOST_DATA=/home/pgwd/pgwd-data
+mkdir -p "$PGWD_HOST_DATA"
+export PGWD_SQLITE_PATH="${PGWD_HOST_DATA}/pgwd.db"
 export PGWD_DB_URL='postgres://user:pass@localhost:5432/mydb?sslmode=disable'
 export PGWD_INTERVAL=60
 export PGWD_HTTP_LISTEN=:8080   # optional: health + /api/pgwd/v1/metrics
@@ -67,7 +70,9 @@ export PGWD_HTTP_LISTEN=:8080   # optional: health + /api/pgwd/v1/metrics
 
 **Stop:** `Ctrl+C`. Configuration: **[`contrib/pgwd.conf.example`](https://github.com/hrodrig/pgwd/blob/main/contrib/pgwd.conf.example)** and **[upstream README](https://github.com/hrodrig/pgwd/blob/main/README.md)**.
 
-**More:** [run/standalone/linux](run/standalone/linux/README.md) · [macos](run/standalone/macos/README.md) · [windows](run/standalone/windows/README.md)
+**More:** **[`run/standalone/README.md`](run/standalone/README.md)** · [Linux](run/standalone/linux/README.md) · [macOS](run/standalone/macos/README.md) · [Windows](run/standalone/windows/README.md) · [*BSD](run/standalone/bsd/README.md) · [Solaris / illumos](run/standalone/solaris/README.md)
+
+**Cron, no daemon, no HTTP port:** **[Cron / one-shot](run/standalone/README.md#cron--one-shot-no-daemon-no-http)** (`PGWD_INTERVAL=0`, omit HTTP listen).
 
 **[↑ Contents](#table-of-contents)**
 
@@ -232,7 +237,7 @@ docker compose --env-file "${PGWD_HOST_DATA}/.env.observability" -p pgwd-obs \
 
 **GitHub Pages:** The [Pages URL](https://hrodrig.github.io/pgwd-selfhosted/) serves **`index.yaml`** for Helm and includes a short **HTML landing** for humans. **`helm repo add`** only needs the HTTPS base URL — you do not have to open the site in a browser.
 
-**Naming (this repo vs the chart):** This GitHub repository is **`pgwd-selfhosted`** (deployment manifests only). The Helm chart lives under **`run/kubernetes/helm/pgwd/`** — **`pgwd`** is the **chart name** (see `name:` in **`Chart.yaml`**). Published chart packages use **`pgwd-<chart-version>.tgz`**; **Git tags** for this repo use **`v<semver>`** (e.g. **`v0.1.1`**) per **`VERSION`**.
+**Naming (this repo vs the chart):** This GitHub repository is **`pgwd-selfhosted`** (deployment manifests only). The Helm chart lives under **`run/kubernetes/helm/pgwd/`** — **`pgwd`** is the **chart name** (see `name:` in **`Chart.yaml`**). Published chart packages use **`pgwd-<chart-version>.tgz`**; **Git tags** for this repo use **`v<semver>`** (e.g. **`v0.1.2`**) per **`VERSION`**.
 
 Generate **`my-values.yaml`** from the published chart (defaults), **edit** it for your cluster (Postgres URL, Slack/Loki, **`image.tag`** to match a [pgwd release](https://github.com/hrodrig/pgwd/releases), resources, etc.), then install:
 
@@ -305,7 +310,7 @@ Keep **SQLite**, **`${PGWD_HOST_DATA}/.env`**, and **`${PGWD_HOST_DATA}/.env.obs
 ```text
 run/
 ├── common/.env.example          # Shared vars for Compose + image tag
-├── standalone/{linux,macos,windows}/
+├── standalone/README.md         # Index; linux, macos, windows, solaris/, bsd/{freebsd,openbsd,netbsd,dragonfly}/
 ├── docker/                      # docker run
 ├── docker-compose/
 │   ├── minimal/

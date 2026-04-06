@@ -7,7 +7,7 @@ Pick a **mode** below. Commands are documented in each subdirectory’s `README.
 | Directory | When to use |
 |-----------|-------------|
 | [`run/common/`](common/) | Shared **environment template** for Compose. Copy to **`${PGWD_HOST_DATA}/.env`**, set **`PGWD_HOST_DATA`** inside that file, then `docker compose --env-file "${PGWD_HOST_DATA}/.env" -f …` from the clone root (see [`run/common/.env.example`](common/.env.example)). |
-| [`standalone/`](standalone/) | **Release binaries** from [pgwd Releases](https://github.com/hrodrig/pgwd/releases) — no Docker. |
+| [`standalone/`](standalone/) | **Release binaries** from [pgwd Releases](https://github.com/hrodrig/pgwd/releases) — no Docker. See **[`standalone/README.md`](standalone/README.md)** (Linux, macOS, Windows, *BSD, Solaris/illumos). **Cron only** (no daemon, no HTTP port): [Cron / one-shot](standalone/README.md#cron--one-shot-no-daemon-no-http). |
 | [`docker/`](docker/) | **`docker run`** with the GHCR image — minimal, no Compose file. |
 | [`docker-compose/minimal/`](docker-compose/minimal/) | **One Compose service** — quick test or small VPS. |
 | [`docker-compose/traefik/`](docker-compose/traefik/) | **Traefik + TLS** — production-style HTTPS on your domain. |

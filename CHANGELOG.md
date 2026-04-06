@@ -7,6 +7,20 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-04-06
+
+### Changed
+
+- Bump repository **`VERSION`** to **0.1.2** (badge, `AGENTS.md`). **Helm `Chart.yaml` `version`** remains **0.1.0** until the first chart publish (target **0.1.3** after further work).
+
+### Documentation
+
+- **Standalone:** [`run/standalone/README.md`](run/standalone/README.md) index; Linux / macOS / Windows guides with **`PGWD_HOST_DATA`**, **`PGWD_SQLITE_PATH`**, optional **`-config`**, and config-file vs env note; root README and [`run/README.md`](run/README.md) cross-links.
+- **Standalone — cron / one-shot:** [Cron / one-shot (no daemon, no HTTP)](run/standalone/README.md#cron--one-shot-no-daemon-no-http) — `PGWD_INTERVAL=0`, omit `PGWD_HTTP_LISTEN`; linked from *BSD index and [`run/README.md`](run/README.md).
+- **Standalone — architectures:** [CPU architectures (release binaries)](run/standalone/README.md#cpu-architectures-release-binaries) — `amd64` / `arm64` / `riscv64` matrix from [pgwd `.goreleaser.yaml`](https://github.com/hrodrig/pgwd/blob/main/.goreleaser.yaml); no SPARC; Solaris amd64-only; RISC-V not on DragonFly/macOS/Windows/Solaris in releases.
+- **Standalone *BSD / Solaris:** [`run/standalone/bsd/`](run/standalone/bsd/README.md) (per-OS dirs); FreeBSD **`sysutils/pgwd`** / **`pkg install`**; [`run/standalone/solaris/README.md`](run/standalone/solaris/README.md) (illumos / Solaris **amd64**, SMF hints).
+- **Standalone macOS:** [`run/standalone/macos/README.md`](run/standalone/macos/README.md) — **Homebrew** (`brew install hrodrig/pgwd/pgwd`) plus tarball path; shared **`PGWD_HOST_DATA`** section.
+
 ## [0.1.1] - 2026-04-06
 
 ### Changed
@@ -28,6 +42,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - **Helm chart** at [`run/kubernetes/helm/pgwd`](run/kubernetes/helm/pgwd) (chart **`pgwd`**, sourced from upstream **contrib/helm/pgwd**).
 - **Community / agent** docs carried over with project names updated (**`CONTRIBUTING.md`**, **`AGENTS.md`**, **`.cursor/rules`**, etc.).
 
-[Unreleased]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.2
 [0.1.1]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.1
 [0.1.0]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.0

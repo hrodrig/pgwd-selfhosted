@@ -4,6 +4,8 @@
 
 Compose files live under this directory; run **`docker compose` from the repository root** with **`--env-file "${PGWD_HOST_DATA}/.env"`** (or **`.env.observability`** for the observability stack). See **[`run/common/.env.example`](../common/.env.example)** for the main template.
 
+**Custom image:** set **`PGWD_IMAGE`** to a full OCI reference in **`.env`** (e.g. private registry); otherwise **`minimal`** and **`traefik`** use **`ghcr.io/hrodrig/pgwd:${PGWD_VERSION}`**.
+
 **Host prerequisites (operators and automated tests):** the machine must have **`docker`** and **`docker compose`** on `PATH` (verify with **`docker --version`** and **`docker compose version`**). If **`compose-stack.sh`** fails with **`docker: not found`**, install Docker Engine and the Compose v2 plugin first — the [Ansible batch tests](../../testing/platforms/README.md) surface the same validation before **`up -d`**.
 
 | Layout | Use when | README |

@@ -72,7 +72,7 @@ services:
     logging: *default-logging
 
   pgwd:
-    image: ghcr.io/hrodrig/pgwd:${PGWD_VERSION:-v0.5.10}
+    image: ${PGWD_IMAGE:-ghcr.io/hrodrig/pgwd:${PGWD_VERSION:-v0.5.10}}
     restart: always
     user: "${PGWD_UID:?set PGWD_UID in .env to id -u}:${PGWD_GID:?set PGWD_GID in .env to id -g}"
     security_opt:

@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Compose image:** **`PGWD_IMAGE`** optional full reference in **`.env`**; **`minimal`** and **`Traefik`** use **`${PGWD_IMAGE:-ghcr.io/hrodrig/pgwd:${PGWD_VERSION:-v0.5.10}}`**. Ansible template and **`hosts.yml.example`** support **`pgwd_image`**; **`run/common/.env.example`** and compose index README updated.
 - **Compose — pgwd validation:** **minimal** stack defaults **`PGWD_DRY_RUN=true`** when unset so empty Slack/Loki does not cause a container **restart loop**. **Traefik** stack defaults **`PGWD_DRY_RUN=false`** — set **`PGWD_DRY_RUN=true`** or configure notifiers in **`.env`**. **`run/common/.env.example`**, minimal README, and Ansible **`env.compose.j2`** updated accordingly.
 - **Ansible notification test:** **`docker exec -e PGWD_DRY_RUN=false`** so **`-force-notification`** still hits the mock when the long-running container uses dry-run (inherited env would otherwise skip sends).
 - **`run/scripts/compose-stack.sh`** (stack **minimal**): if **`.env`** has no **`PGWD_DRY_RUN`** line and the shell variable is unset, **`export PGWD_DRY_RUN=true`** before **`docker compose`** so interpolation always enables dry-run without notifiers (helps hosts on an older `docker-compose.yml` missing the default).

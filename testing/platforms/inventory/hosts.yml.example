@@ -12,8 +12,10 @@ all:
     pgwd_compose_repo_url: https://github.com/hrodrig/pgwd-selfhosted.git
     pgwd_compose_repo_dest: /opt/pgwd-selfhosted
 
-    # Published ghcr.io/hrodrig/pgwd tag (application version).
+    # Image tag for ghcr.io/hrodrig/pgwd when PGWD_IMAGE is unset (see docker-compose image line).
     pgwd_image_version: v0.5.10
+    # Optional: full OCI reference (private registry / dev build). When set, overrides registry+tag.
+    # pgwd_image: hcr.example.com/library/pgwd:v0.5.11-dev
 
     # Host port mapped to container 8080 (healthz/metrics).
     pgwd_host_port: 8080

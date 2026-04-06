@@ -8,7 +8,7 @@ These playbooks **fail fast on the same prerequisite checks** a human operator w
 
 | Suite | What it validates |
 | --- | --- |
-| **This directory** | **Docker** + **Compose v2** on each host; clone or update **pgwd-selfhosted**; render `${PGWD_HOST_DATA}/.env`; `compose-stack.sh minimal up -d`; **`/api/pgwd/v1/healthz`**; **per-VPS Python mock** on **`notification_mock_port`**; **`docker exec pgwd … -force-notification`** to Loki + Slack URLs via the **Docker bridge gateway**; asserts captures in **`/tmp/pgwd-mock-*.json`**; `minimal down` in teardown |
+| **This directory** | **Docker** + **Compose v2** on each host; clone or update **pgwd-selfhosted**; render `${PGWD_HOST_DATA}/.env`; **`chown` `${PGWD_HOST_DATA}`** to **container UID/GID** (default **1000:1000**) for SQLite on the bind mount; `compose-stack.sh minimal up -d`; **`/api/pgwd/v1/healthz`**; **per-VPS Python mock** on **`notification_mock_port`**; **`docker exec pgwd … -force-notification`** to Loki + Slack URLs via the **Docker bridge gateway**; asserts captures in **`/tmp/pgwd-mock-*.json`**; `minimal down` in teardown |
 | [pgwd `testing/platforms/`](https://github.com/hrodrig/pgwd/tree/develop/testing/platforms) | Native package/binary, init systems, same mock pattern on **`127.0.0.1`**, timers |
 | [pgwd `make test-e2e-kube`](https://github.com/hrodrig/pgwd/blob/develop/Makefile) | **Kind** + `-kube-postgres` / `-kube-loki` |
 
@@ -57,7 +57,7 @@ ansible-playbook playbooks/full-cycle.yml --limit vps-ubuntu
 
 | Playbook | Description |
 | --- | --- |
-| `playbooks/setup.yml` | Install **git** if needed, clone/update repo, create **`pgwd_host_data`**, template **`${pgwd_host_data}/.env`** |
+| `playbooks/setup.yml` | Install **git** if needed, clone/update repo, create **`pgwd_host_data`**, template **`${pgwd_host_data}/.env`**, set ownership for **pgwd** bind mount (**1000:1000** by default) |
 | `playbooks/test.yml` | **`minimal up -d`**, **healthz**, then **mock + `docker exec` `-force-notification`** (Loki + Slack) |
 | `playbooks/teardown.yml` | **`compose-stack.sh minimal down`** (idempotent) |
 | `playbooks/full-cycle.yml` | **setup** → **test** → **teardown** |
@@ -75,7 +75,7 @@ Copy **`inventory/hosts.yml.example`** to **`inventory/hosts.yml`** (the latter 
 
 - **`ansible_host`**, **`ansible_port`**, **`ansible_user`** (often `root`)
 - **`pgwd_db_url`** — Postgres URL for the container (`PGWD_DB_URL`)
-- **`pgwd_host_data`** — host directory for **`.env`** and SQLite bind-mount (e.g. `/var/lib/pgwd-compose`)
+- **`pgwd_host_data`** — host directory for **`.env`** and SQLite bind-mount (e.g. `/var/lib/pgwd-compose`). After setup, Ansible sets **owner/group** to **`pgwd_container_uid` / `pgwd_container_gid`** (default **1000:1000**) so the container user can write **`pgwd.db`**. Override those if your image runs as another UID (check with `docker run --rm --entrypoint id <image>`).
 
 Optional: **`pgwd_compose_repo_version`** (branch/tag, default `develop`), **`pgwd_image_version`** (image tag, default `v0.5.10`), **`pgwd_host_port`**, **`notification_mock_port`** (default **9999**), **`pgwd_compose_docker_host_fallback`** if `docker inspect` does not report a gateway.
 

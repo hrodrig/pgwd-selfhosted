@@ -33,6 +33,9 @@ all:
 
     # Directory on the VM: holds .env and SQLite volume mount target.
     pgwd_host_data: /var/lib/pgwd-compose
+    # Optional: must match the pgwd process UID/GID inside the image (default 1000:1000 for official Alpine image).
+    # pgwd_container_uid: "1000"
+    # pgwd_container_gid: "1000"
 
   children:
     compose_vps:

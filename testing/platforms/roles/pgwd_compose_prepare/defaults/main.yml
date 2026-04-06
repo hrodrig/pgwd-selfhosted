@@ -9,3 +9,6 @@ pgwd_interval: 60
 pgwd_log_level: info
 # true = start without Slack/Loki in .env; notification play still uses docker exec with explicit URLs.
 pgwd_dry_run: true
+# Ownership for bind-mount of /var/lib/pgwd (SQLite). Must match the runtime user in the image (official image: 1000:1000; verify with docker run ... id if custom).
+pgwd_container_uid: "1000"
+pgwd_container_gid: "1000"

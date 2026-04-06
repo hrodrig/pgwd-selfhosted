@@ -37,3 +37,12 @@
     src: env.compose.j2
     dest: "{{ pgwd_host_data }}/.env"
     mode: "0600"
+
+- name: Set PGWD_HOST_DATA ownership for pgwd container user (SQLite bind mount)
+  ansible.builtin.file:
+    path: "{{ pgwd_host_data }}"
+    state: directory
+    owner: "{{ pgwd_container_uid }}"
+    group: "{{ pgwd_container_gid }}"
+    mode: "0755"
+    recurse: true

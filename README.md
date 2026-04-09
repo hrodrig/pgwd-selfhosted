@@ -245,12 +245,12 @@ Generate **`my-values.yaml`** from the published chart (defaults), **edit** it f
 helm repo add pgwd https://hrodrig.github.io/pgwd-selfhosted
 helm repo update
 helm search repo pgwd -l
-helm show values pgwd/pgwd --version 0.1.0 > my-values.yaml
+helm show values pgwd/pgwd --version 0.1.1 > my-values.yaml
 # Edit my-values.yaml — do not commit secrets to git.
-helm install pgwd pgwd/pgwd --version 0.1.0 -n pgwd --create-namespace -f my-values.yaml
+helm upgrade --install pgwd pgwd/pgwd --version 0.1.1 -n pgwd --create-namespace -f my-values.yaml
 ```
 
-Use the **`version:`** shown in **`helm search`** if it differs from **`0.1.0`**. Full options: [run/kubernetes/helm/pgwd/README.md](run/kubernetes/helm/pgwd/README.md).
+Use the **`version:`** shown in **`helm search`** if it differs from **`0.1.1`**. Full options: [run/kubernetes/helm/pgwd/README.md](run/kubernetes/helm/pgwd/README.md).
 
 **Secrets (recommended):** do **not** put **`postgres://`** URLs or webhooks in shell history. Prefer **`secrets.existingSecret`** with keys **`url`**, **`slack-webhook`**, **`loki-url`** (see **`secrets`** in [`values.yaml`](run/kubernetes/helm/pgwd/values.yaml)):
 
@@ -276,7 +276,7 @@ git clone https://github.com/hrodrig/pgwd-selfhosted.git
 cd pgwd-selfhosted
 helm show values ./run/kubernetes/helm/pgwd > my-values.yaml
 # Edit my-values.yaml — do not commit secrets to git.
-helm install pgwd ./run/kubernetes/helm/pgwd -n pgwd --create-namespace -f my-values.yaml
+helm upgrade --install pgwd ./run/kubernetes/helm/pgwd -n pgwd --create-namespace -f my-values.yaml
 ```
 
 See **[`values.yaml`](run/kubernetes/helm/pgwd/values.yaml)** in-tree for defaults.

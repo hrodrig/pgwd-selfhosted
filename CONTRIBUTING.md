@@ -98,7 +98,7 @@ Requires **Docker**, **kind**, **kubectl**; **`test-helm-kind`** also **helm**.
 
 ### Helm chart on GitHub Pages (maintainers)
 
-The install path **`helm repo add pgwd https://hrodrig.github.io/pgwd-selfhosted`** expects **`index.yaml`** and packaged **`.tgz`** files on the **`gh-pages`** branch.
+The install path **`helm repo add pgwd https://hrodrig.github.io/pgwd-selfhosted`** expects **`index.yaml`** and packaged **`.tgz`** files on the **`gh-pages`** branch. A static **`index.html`** for human visitors is copied from **`run/kubernetes/helm/helm-repo-landing/index.html`** on each **Release Charts** run (same pattern as **gghstats-selfhosted** on GitHub Pages).
 
 - **Automation:** [**.github/workflows/release-charts.yml**](.github/workflows/release-charts.yml) runs **[helm/chart-releaser-action](https://github.com/helm/chart-releaser-action)** when you **push an annotated tag `v*`** on **`main`** (aligned with the repo’s **`VERSION`** / release tags). It packages the chart, creates a GitHub Release (artifact `.tgz`), and updates **`gh-pages`** with **`index.yaml`**. **`workflow_dispatch`** is available for a manual re-run. Continuous validation before merge: [**helm-lint.yml**](.github/workflows/helm-lint.yml).
 - **One-time setup:** Repository **Settings → Pages → Build and deployment → Source:** branch **`gh-pages`**, folder **`/` (root)**.

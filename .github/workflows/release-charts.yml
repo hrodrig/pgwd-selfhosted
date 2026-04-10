@@ -58,3 +58,22 @@ jobs:
           charts_dir: run/kubernetes/helm
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      # Static landing page for browsers (Helm still uses index.yaml only). Source file lives on the
+      # default branch / tag; copy to gh-pages after chart-releaser updates the index.
+      - name: Publish Helm repo landing page (GitHub Pages)
+        run: |
+          set -euo pipefail
+          LANDING_SRC="${GITHUB_WORKSPACE}/run/kubernetes/helm/helm-repo-landing/index.html"
+          test -f "$LANDING_SRC"
+          cp "$LANDING_SRC" /tmp/helm-pages-index.html
+          git fetch origin gh-pages
+          git checkout gh-pages
+          cp /tmp/helm-pages-index.html index.html
+          git add index.html
+          if git diff --staged --quiet; then
+            echo "index.html unchanged on gh-pages"
+          else
+            git commit -m "docs(helm): sync GitHub Pages landing for Helm index"
+            git push origin gh-pages
+          fi

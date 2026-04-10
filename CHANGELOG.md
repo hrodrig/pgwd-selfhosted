@@ -7,6 +7,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Helm GitHub Pages landing:** **`run/kubernetes/helm/helm-repo-landing/index.html`** — static page (like **gghstats-selfhosted**) copied to **`gh-pages`** after **chart-releaser** in **Release Charts**; documents **`helm repo add`** for human visitors while **`index.yaml`** remains the Helm client entrypoint.
+
 ## [0.1.5] - 2026-04-09
 
 ### Changed

@@ -4,20 +4,20 @@ Thank you for helping improve these deployment manifests.
 
 ## How to contribute
 
-- **Issues:** Use [GitHub Issues](https://github.com/hrodrig/pgwd-selfhosted/issues) for bugs, doc gaps, or manifest improvements (Compose, Helm, observability).
+- **Issues:** Use [GitHub Issues](https://github.com/hrodrig/pgwd-selfhosted/issues) for bugs, doc gaps, or manifest improvements (Compose, Helm).
 - **Pull requests:** Open PRs against **`develop`**. Keep changes focused (one concern per PR when possible).
 - **Application behavior** (Go code, UI, API): contribute in **[pgwd](https://github.com/hrodrig/pgwd)** — this repo is **infrastructure only**.
 
 ## Checks before submitting
 
-- Paths under **`run/`** match the documented layout; **`docker compose … config`** succeeds when a minimal env file is provided (e.g. **`--env-file "${PGWD_HOST_DATA}/.env"`** with **`PGWD_HOST_DATA`** set, or a dev **`./.env`** at the repo root with defaults). For observability: **`--env-file "${PGWD_HOST_DATA}/.env.observability"`** and **`-p pgwd-obs`**.
-- **Helm:** If your PR changes **`run/kubernetes/helm/`**, run **[Helm chart validation (same as CI)](#helm-chart-validation-same-as-ci)** below. GitHub Actions runs [**.github/workflows/helm-lint.yml**](.github/workflows/helm-lint.yml) on those paths.
+- Paths under **`run/`** match the documented layout; **`docker compose … config`** succeeds when a minimal env file is provided (e.g. **`--env-file "${PGWD_HOST_DATA}/.env"`** with **`PGWD_HOST_DATA`** set, or a dev **`./.env`** at the repo root with defaults). Shortcut from the repo root (Helm + kubeconform + minimal Compose **`config`**): **`make release-check`** (requires **helm**, **kubeconform**, **docker**).
+- **Helm:** If your PR changes **`run/kubernetes/helm/`**, run **`make release-check`** or **[Helm chart validation (same as CI)](#helm-chart-validation-same-as-ci)** below. GitHub Actions runs [**.github/workflows/helm-lint.yml**](.github/workflows/helm-lint.yml) on those paths.
 - **English** for README and comments.
 - If you bump **[`VERSION`](VERSION)**, keep the README **Version** badge and **CHANGELOG** aligned. Bump **`Chart.yaml` `version:`** only when **`run/kubernetes/helm/pgwd/`** changes and you intend to publish a **new chart package** — **`VERSION`** and chart **`version:`** do not need to match on every release (see **Versioning** in the root README).
 
 ### Helm chart validation (same as CI)
 
-Replicate locally what [.github/workflows/helm-lint.yml](.github/workflows/helm-lint.yml) does: **`helm lint`** (Chart metadata, template syntax) and **`helm template`** piped to **[kubeconform](https://github.com/yannh/kubeconform)** (rendered manifests validated against Kubernetes OpenAPI schemas **without** a cluster). **`kubectl apply --dry-run=client`** is **not** used in CI: recent kubectl builds may still contact **`localhost:8080`** for API discovery and fail where no apiserver exists.
+Replicate locally what [.github/workflows/helm-lint.yml](.github/workflows/helm-lint.yml) does: **`helm lint`** (Chart metadata, **`values.schema.json`** on merged values, template syntax), a second **`helm lint`** with **`-f run/kubernetes/helm/pgwd/values-config-mode.yaml`**, and **`helm template`** piped to **[kubeconform](https://github.com/yannh/kubeconform)** (rendered manifests validated against Kubernetes OpenAPI schemas **without** a cluster). **`kubectl apply --dry-run=client`** is **not** used in CI: recent kubectl builds may still contact **`localhost:8080`** for API discovery and fail where no apiserver exists.
 
 #### Requirements
 
@@ -38,11 +38,14 @@ export KUBERNETES_VERSION=1.30.0
 
 helm lint "$CHART_DIR"
 
+helm lint "$CHART_DIR" -f "$CHART_DIR/values-config-mode.yaml"
+
 helm template test-rel "$CHART_DIR" --namespace test-ns | \
   kubeconform -strict -kubernetes-version "$KUBERNETES_VERSION" -summary -
 
 helm template test-rel "$CHART_DIR" --namespace test-ns \
-  --set persistence.enabled=false | \
+  --set config.enabled=true \
+  --set secrets.create=false | \
   kubeconform -strict -kubernetes-version "$KUBERNETES_VERSION" -summary -
 
 helm template test-rel "$CHART_DIR" --namespace test-ns \
@@ -61,10 +64,10 @@ With the current templates, **`kubeconform -summary`** should report **Valid** o
 
 | Scenario | Typical count | Notes |
 |----------|---------------|--------|
-| Default values | 3 | PVC, Service, Deployment |
-| **`persistence.enabled=false`** | 2 | No PVC |
-| **`secrets.dbUrl`** set (inline Secret) | 4 | Adds **`Secret`** |
-| **`secrets.existingSecret`** set (**`secrets.create=false`**) | 3 | No chart-managed Secret; Deployment references the existing Secret name |
+| Default values | 1 | **`Deployment`** only (empty **`secrets.*`** → no chart **`Secret`**) |
+| **`config.enabled=true`** (**`secrets.create=false`**) | 2 | **`Deployment`** + **`ConfigMap`** |
+| **`secrets.dbUrl`** set (inline Secret) | 2 | Adds chart-managed **`Secret`** |
+| **`secrets.existingSecret`** set (**`secrets.create=false`**) | 1 | No chart-managed Secret; Deployment references the existing Secret name |
 
 If counts change after you edit templates, trust the workflow steps in **helm-lint.yml** and the rendered YAML, not this table.
 
@@ -77,6 +80,15 @@ helm template test-rel run/kubernetes/helm/pgwd --namespace test-ns | kubectl ap
 ```
 
 Use the same **`helm template`** flags as in the kubeconform scenarios to exercise each path.
+
+**Optional: kind smoke tests** — **[testing/kind/README.md](testing/kind/README.md)**:
+
+```bash
+make test-kind-postgres   # Postgres only (Docker, kind, kubectl)
+make test-helm-kind       # + Helm pgwd + log-based Postgres check (adds helm)
+```
+
+Requires **Docker**, **kind**, **kubectl**; **`test-helm-kind`** also **helm**.
 
 ## Release flow (this repo)
 

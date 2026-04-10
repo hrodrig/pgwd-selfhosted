@@ -11,10 +11,10 @@
 ```bash
 export PGWD_HOST_DATA=/var/pgwd/data
 mkdir -p "$PGWD_HOST_DATA"
-export PGWD_SQLITE_PATH="${PGWD_HOST_DATA}/pgwd.db"
 export PGWD_DB_URL='postgres://user:pass@localhost:5432/mydb?sslmode=disable'
-export PGWD_HTTP_LISTEN=:8080
+export PGWD_INTERVAL=60
 ./pgwd
+# Optional: pgwd -config — YAML per contrib/pgwd.conf.example; extras — upstream README.
 ```
 
 4. Optional **`pgwd -config …`**: when a config file is loaded, **environment variables are ignored** ([upstream](https://github.com/hrodrig/pgwd/blob/main/README.md)).

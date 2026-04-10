@@ -5,7 +5,6 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/hrodrig/pgwd
-  # ghcr.io/hrodrig/pgwd tags match git release tags (leading v), e.g. v0.5.10 — not 0.5.10
   tag: "v0.5.10"
   pullPolicy: IfNotPresent
 
@@ -50,35 +49,27 @@ affinity: {}
 # pgwd configuration
 # -----------------------------------------------------------------------------
 # Two modes:
-# 1. Config file (recommended for multiple databases): set config.enabled=true
-#    and configure config.databases. Template values for URLs from secrets.
+# 1. Config file: set config.enabled=true and full YAML in config.extra (db:, notifications:, …).
 # 2. Env vars: set config.enabled=false and use env.* below.
 #
 config:
   enabled: false
-  # When enabled, full config YAML. Use tpl for values from secrets.
-  # Example for single DB with secret:
-  # databases:
-  #   - url: postgres://user:{{ .Values.secrets.dbPassword }}@postgres.default.svc.cluster.local:5432/mydb
-  #     threshold:
-  #       levels: "75,85,95"
-  #   - url: postgres://user:{{ .Values.secrets.dbPassword }}@replica.default.svc.cluster.local:5432/mydb
+  # When enabled, full config YAML in config.extra (ConfigMap content is written verbatim — this chart does not tpl it).
+  # To take the DB URL from chart secrets, keep config.enabled=false and use secrets.dbUrl → PGWD_DB_URL on the Deployment.
+  # Example db: fragment if you embed a static URL here (align with your pgwd image tag / file schema):
+  # db:
+  #   url: postgres://user:pass@postgres.default.svc.cluster.local:5432/mydb?sslmode=disable
+  #   threshold:
+  #     levels: "75,85,95"
+  # Schema: pgwd file YAML (see hrodrig/pgwd internal/config/file.go and contrib/pgwd.conf.example).
+  # Unknown keys are ignored at parse time — do not use log_level / confirm_* here; those are not file fields.
   extra: |
     client: "pgwd-k8s"
     interval: 60
-    dry_run: false
-    log_level: info
+    dry_run: true
     notify_on_connect_failure: true
-    sqlite:
-      path: /var/lib/pgwd/pgwd.db
-      max_metrics: 10000
-    http:
-      listen: ":8080"
-      base_path: "/api/pgwd/v1"
-      healthz_path: "/healthz"
-      metrics_path: "/metrics"
-    confirm_alert: 2
-    confirm_ok: 2
+    db:
+      url: postgres://user:pass@postgres.default.svc.cluster.local:5432/mydb?sslmode=disable
     notifications:
       slack:
         webhook: ""
@@ -87,17 +78,10 @@ config:
 
 # Environment variables (used when config.enabled=false)
 # When config.enabled=true, env vars are IGNORED by pgwd; configure via config.extra instead.
-#
-# Paths below are inside the container. Aligns with Docker Compose in this repo: the host keeps state
-# outside the git clone (e.g. PGWD_HOST_DATA=/home/pgwd/pgwd-data) and bind-mounts it to /var/lib/pgwd;
-# here, persistence.mountPath + PGWD_SQLITE_PATH use the same in-container layout. Override only if you
-# change the volume mount path in templates.
 env:
   PGWD_CLIENT: "pgwd-k8s"
   PGWD_INTERVAL: "60"
   PGWD_LOG_LEVEL: "info"
-  PGWD_HTTP_LISTEN: ":8080"
-  PGWD_SQLITE_PATH: "/var/lib/pgwd/pgwd.db"
   # PGWD_NOTIFICATIONS_SLACK_WEBHOOK: from secrets
   # PGWD_NOTIFICATIONS_LOKI_URL: from secrets
 
@@ -111,41 +95,3 @@ secrets:
   # Use existingSecret to reference an existing secret (keys: url, slack-webhook, loki-url)
   # When set, we use this instead of creating; no secret is created.
   existingSecret: ""
-
-# Persistence for SQLite store (resolution notifications, /metrics history)
-persistence:
-  enabled: true
-  storageClass: ""  # use cluster default
-  size: 1Gi
-  # existingClaim: ""  # use existing PVC instead of creating
-
-# HTTP service (for metrics scraping, optional)
-service:
-  enabled: true
-  type: ClusterIP
-  port: 8080
-
-# Liveness / readiness probes
-livenessProbe:
-  httpGet:
-    path: /api/pgwd/v1/healthz
-    port: http
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
-
-readinessProbe:
-  httpGet:
-    path: /api/pgwd/v1/healthz
-    port: http
-  initialDelaySeconds: 3
-  periodSeconds: 5
-  timeoutSeconds: 3
-  failureThreshold: 2
-
-# Optional: PodMonitor for Prometheus Operator
-podMonitor:
-  enabled: false
-  interval: 30s
-  path: /api/pgwd/v1/metrics

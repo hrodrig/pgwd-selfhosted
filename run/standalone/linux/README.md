@@ -9,15 +9,16 @@
 ```bash
 export PGWD_HOST_DATA=/home/pgwd/pgwd-data
 mkdir -p "$PGWD_HOST_DATA"
-export PGWD_SQLITE_PATH="${PGWD_HOST_DATA}/pgwd.db"
 export PGWD_DB_URL='postgres://user:pass@localhost:5432/mydb?sslmode=disable'
-export PGWD_HTTP_LISTEN=:8080
+export PGWD_INTERVAL=60
 ./pgwd
 ```
 
+**Optional (beyond `v0.5.10` here):** additional flags and env — **[upstream README](https://github.com/hrodrig/pgwd/blob/main/README.md)**; YAML keys — **[contrib/pgwd.conf.example](https://github.com/hrodrig/pgwd/blob/main/contrib/pgwd.conf.example)**.
+
 4. Optional YAML config: copy **[`contrib/pgwd.conf.example`](https://github.com/hrodrig/pgwd/blob/main/contrib/pgwd.conf.example)** to **`${PGWD_HOST_DATA}/pgwd.conf`**, edit, then **`pgwd -config "${PGWD_HOST_DATA}/pgwd.conf"`**. **Note:** when a config file is loaded, **environment variables are ignored** ([upstream behavior](https://github.com/hrodrig/pgwd/blob/main/README.md)); use env-only mode (no **`-config`**) for the **`PGWD_*`** flow above.
 
-**systemd:** use **`EnvironmentFile=`** pointing to a **root-only** file with secrets; set **`WorkingDirectory=`** or absolute paths for **`PGWD_SQLITE_PATH`** / **`-config`**.
+**systemd:** use **`EnvironmentFile=`** pointing to a **root-only** file with secrets; set **`WorkingDirectory=`** or absolute paths for **`PGWD_DB_URL`**, optional config paths, etc., as needed.
 
 Docker-based paths: **`run/docker/`**, **`run/docker-compose/`**.
 

@@ -2,19 +2,9 @@
 
 ← [Back to *BSD index](../README.md) · [run/standalone](../../README.md).
 
-## Ports: `sysutils/pgwd` (recommended when in the tree)
+Primary path in this guide: **release tarball** (below). Do **not** assume a **`sysutils/pgwd`** port or **`pkg install pgwd`** exists on your machine until FreeBSD actually ships it for your version.
 
-When **`sysutils/pgwd`** is available in the official ports collection, install from source or packages:
-
-```sh
-# Package (when published on your FreeBSD version)
-sudo pkg install pgwd
-
-# Or build from ports
-cd /usr/ports/sysutils/pgwd && sudo make install clean
-```
-
-The port installs **`pgwd`** under **`/usr/local/bin`**, **`rc.d`** integration, **`/usr/local/etc/pgwd/pgwd.conf.example`**, and expects config under **`/etc/pgwd/pgwd.conf`** by default — see upstream **[`contrib/freebsd/README.md`](https://github.com/hrodrig/pgwd/blob/main/contrib/freebsd/README.md)**. Until the port lands, track **[bug 294001](https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=294001)** and use a **release tarball** below.
+**Upstream port effort** (outside **pgwd-selfhosted**): track **[bug 294001](https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=294001)** and **[contrib/freebsd/README.md](https://github.com/hrodrig/pgwd/blob/main/contrib/freebsd/README.md)** in the pgwd repo if you maintain or follow that work.
 
 ## Tarball from releases
 
@@ -25,17 +15,17 @@ The port installs **`pgwd`** under **`/usr/local/bin`**, **`rc.d`** integration,
 ```sh
 export PGWD_HOST_DATA=/var/db/pgwd
 mkdir -p "$PGWD_HOST_DATA"
-export PGWD_SQLITE_PATH="${PGWD_HOST_DATA}/pgwd.db"
 export PGWD_DB_URL='postgres://user:pass@localhost:5432/mydb?sslmode=disable'
-export PGWD_HTTP_LISTEN=:8080
+export PGWD_INTERVAL=60
 ./pgwd
+# Optional: pgwd -config — YAML per contrib/pgwd.conf.example; extras — upstream README.
 ```
 
 Optional **`pgwd -config /path/to/pgwd.conf`** — when used, **environment variables are ignored**.
 
-## rc.d only (raw binary without the port)
+## rc.d (daemon from tarball)
 
-If you deploy the **tarball** and not **`sysutils/pgwd`**, install an **`rc.d`** script yourself (see **`contrib/freebsd/rc.d/`** in the [pgwd repo](https://github.com/hrodrig/pgwd)) and point it at **`pgwd`** and your **`PGWD_*`** or **`-config`**.
+If you run the **binary from a tarball**, add an **`rc.d`** script yourself (see **`contrib/freebsd/rc.d/`** in the [pgwd repo](https://github.com/hrodrig/pgwd)) and point it at **`pgwd`** and your **`PGWD_*`** or **`-config`**.
 
 ---
 

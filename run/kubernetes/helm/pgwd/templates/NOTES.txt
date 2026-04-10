@@ -4,14 +4,6 @@ pgwd has been installed.
 
   kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name=pgwd
 
-2. View logs:
+2. View logs (confirm Postgres connectivity — look for lines with total= / active= / max_connections=):
 
   kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name=pgwd -f
-
-3. Scrape metrics ( Prometheus ):
-
-  {{ include "pgwd.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:8080/api/pgwd/v1/metrics
-
-4. Test health (from another pod with curl):
-
-  kubectl run -n {{ .Release.Namespace }} curl --rm -i --restart=Never --image=curlimages/curl -- curl -s http://{{ include "pgwd.fullname" . }}:8080/api/pgwd/v1/healthz

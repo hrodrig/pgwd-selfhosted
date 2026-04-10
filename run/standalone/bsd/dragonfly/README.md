@@ -11,10 +11,10 @@
 ```sh
 export PGWD_HOST_DATA=/var/db/pgwd
 mkdir -p "$PGWD_HOST_DATA"
-export PGWD_SQLITE_PATH="${PGWD_HOST_DATA}/pgwd.db"
 export PGWD_DB_URL='postgres://user:pass@localhost:5432/mydb?sslmode=disable'
-export PGWD_HTTP_LISTEN=:8080
+export PGWD_INTERVAL=60
 ./pgwd
+# Optional: pgwd -config — YAML per contrib/pgwd.conf.example; extras — upstream README.
 ```
 
 Optional **`pgwd -config …`** — when used, **environment variables are ignored**.

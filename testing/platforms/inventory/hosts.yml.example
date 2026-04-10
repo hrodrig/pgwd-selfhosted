@@ -17,7 +17,7 @@ all:
     # Optional: full OCI reference (private registry / dev build). When set, overrides registry+tag.
     # pgwd_image: hcr.example.com/library/pgwd:v0.5.11-dev
 
-    # Host port mapped to container 8080 (healthz/metrics).
+    # Unused by minimal v0.5.10 (no host port). Kept for env template / future use.
     pgwd_host_port: 8080
 
     # Python mock for Slack + Loki on each VPS (same idea as pgwd test-platforms).
@@ -31,7 +31,7 @@ all:
     # Set false when pgwd_notifications_* are set and you want real alerts from the daemon.
     # pgwd_dry_run: true
 
-    # Directory on the VM: holds .env and SQLite volume mount target.
+    # Directory on the VM: holds generated .env (minimal v0.5.10: no pgwd bind mount).
     pgwd_host_data: /var/lib/pgwd-compose
     # Optional: must match the pgwd process UID/GID inside the image (default 1000:1000 for official Alpine image).
     # pgwd_container_uid: "1000"

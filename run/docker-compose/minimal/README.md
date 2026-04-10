@@ -4,7 +4,11 @@
 
 **Shortcut:** [`run/scripts/compose-stack.sh`](../../scripts/compose-stack.sh) — e.g. **`./run/scripts/compose-stack.sh minimal up -d`** (same `--env-file` / `-f` as below).
 
-Single **pgwd** service using the **GHCR image**. For **HTTPS + domain**, use **[`../traefik/`](../traefik/)** instead. For **`docker run`** without Compose, see **[`run/docker/`](../../docker/README.md)**. Set **`PGWD_HOST_DATA`** in **`${PGWD_HOST_DATA}/.env`** to a **host directory** for SQLite (recommended: absolute path, e.g. `/home/pgwd/pgwd-data`). If **`PGWD_HOST_DATA`** is unset in the env file you pass to Compose, the stack bind-mounts the repo’s **`data/`** (tracked empty via **`data/.keep`**; other files under **`data/`** are gitignored — see root `.gitignore`).
+Single **pgwd** service using the **GHCR** image. Default **`PGWD_VERSION=v0.5.10`**: env-driven Postgres monitoring and optional Slack/Loki; use **`docker logs`** for output.
+
+Use **`${PGWD_HOST_DATA}/.env`** so secrets and **`PGWD_DB_URL`** stay outside the git clone (recommended on servers). **`PGWD_HOST_DATA`** is **not** bind-mounted into the container for this layout.
+
+This **`docker-compose.yml`** does **not** map host **`ports:`** and does not ship an extra **Service** for pgwd — there is **no** inbound listener to expose in this layout; use **`docker logs`** and optional **Slack/Loki**. For **`docker run`** without Compose, see **[`run/docker/`](../../docker/README.md)**.
 
 ### Host prerequisites
 
@@ -14,7 +18,7 @@ Same checks whether you run Compose by hand or via **[`testing/platforms/`](../.
 
 **Notifiers vs dry-run:** pgwd must have **Slack and/or Loki** configured **or** **`PGWD_DRY_RUN=true`**. This layout defaults **`PGWD_DRY_RUN=true`** when the variable is unset, so missing webhooks does not cause a **restart loop**. Set **`PGWD_DRY_RUN=false`** in **`.env`** when real notifier URLs are set.
 
-To run **`-force-notification`** against a mock while the daemon stays in dry-run, use a one-shot override so the child process does not inherit dry-run, e.g. **`docker exec -e PGWD_DRY_RUN=false pgwd /home/pgwd/pgwd -force-notification …`** (plus **`-db-url`** and notifier URLs). The Ansible **[`testing/platforms/`](../../testing/platforms/README.md)** notification play does this automatically.
+To run **`-force-notification`** against a mock while the daemon stays in dry-run, use a one-shot override so the child process does not inherit dry-run, e.g. **`docker exec -e PGWD_DRY_RUN=false pgwd /home/pgwd/pgwd -force-notification …`** (plus **`-db-url`** and notifier URLs). The Ansible **[`testing/platforms/`](../../../testing/platforms/README.md)** notification play does this automatically.
 
 From the **repository root**:
 
@@ -33,9 +37,9 @@ Stop:
 docker compose --env-file "${PGWD_HOST_DATA}/.env" -f run/docker-compose/minimal/docker-compose.yml down
 ```
 
-For **HTTPS and a public hostname**, use **[`run/docker-compose/traefik/`](../traefik/)** instead.
+**Check:** **`docker logs pgwd`** (or **`docker logs -f pgwd`**) — look for **`total=`** / **`active=`** / **`max_connections=`** when Postgres is reachable.
 
-**Defaults:** the Compose file sets **`PGWD_HTTP_LISTEN=0.0.0.0:8080`** and publishes **`PGWD_HOST_PORT`** (default **8080**) for health and **`/api/pgwd/v1/metrics`**. To avoid exposing HTTP entirely, this layout is not ideal (use **[one-shot `docker run`](../../docker/README.md#one-shot-container-no-daemon)** or **[standalone cron](../../standalone/README.md#cron--one-shot-no-daemon-no-http)**); override **`PGWD_INTERVAL`** in **`.env`** only if you understand interaction with **`restart: unless-stopped`** (interval **0** makes the process exit; the container may restart in a loop).
+**`PGWD_INTERVAL=0`** with **`restart: unless-stopped`** exits the process after one run and Docker will keep restarting the container; use a one-shot **[`docker run --rm`](../../docker/README.md#one-shot-container-no-daemon)** instead for cron-style single runs.
 
 ---
 

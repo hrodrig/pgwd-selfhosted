@@ -1,5 +1,5 @@
 ---
-# full-cycle — clone/env → minimal stack up + healthz → compose down
+# full-cycle — clone/env → minimal stack up + log-based check → compose down
 - name: Import compose setup
   ansible.builtin.import_playbook: setup.yml
 

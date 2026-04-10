@@ -1,14 +1,14 @@
 # pgwd-selfhosted
 
-[![Version](https://img.shields.io/badge/version-0.1.2-blue)](https://github.com/hrodrig/pgwd-selfhosted/releases)
+[![Version](https://img.shields.io/badge/version-0.1.5-blue)](https://github.com/hrodrig/pgwd-selfhosted/releases)
 [![Release](https://img.shields.io/github/v/release/hrodrig/pgwd-selfhosted?label=release)](https://github.com/hrodrig/pgwd-selfhosted/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![App image on GHCR](https://img.shields.io/badge/image-ghcr.io%2Fhrodrig%2Fpgwd-2496ED?logo=github)](https://github.com/hrodrig/pgwd/pkgs/container/pgwd)
 [![pgwd app](https://img.shields.io/badge/app-hrodrig%2Fpgwd-181717?logo=github)](https://github.com/hrodrig/pgwd)
 
-Deployment manifests for **[pgwd](https://github.com/hrodrig/pgwd)** — Compose, Helm, `docker run`, optional observability. **App source and releases:** [github.com/hrodrig/pgwd](https://github.com/hrodrig/pgwd).
+Deployment manifests for **[pgwd](https://github.com/hrodrig/pgwd)** — Compose, Helm, and **`docker run`**. **This repository is the home for all deployment-related work** (Kubernetes, Compose, runbooks). **[hrodrig/pgwd](https://github.com/hrodrig/pgwd)** is the **application** source, binaries, and container image only — the Helm chart is **not** in that repo on **`main`**; use **pgwd-selfhosted** (`run/kubernetes/helm/pgwd/`) or the future Helm repo on GitHub Pages.
 
-> **Work in progress — not stable yet.** This repo is under active development. Treat it as **experimental** until work is **merged into `main`** and you follow tagged releases or the project explicitly marks a stable cut. Do not assume production readiness from `develop` alone.
+**Releases:** Root **`VERSION`** and Git tags **`v<semver>`** on **`main`** name repository snapshots. Work in progress lands on **`develop`** first — for reproducible paths, prefer **`main`** or a **tag**, not unreviewed **`develop`**.
 
 **Policies:** [Community and policies](#community-and-policies), [community standards](#community-standards) — changelog, contributing, security, code of conduct, agent guidelines.
 
@@ -20,8 +20,6 @@ Deployment manifests for **[pgwd](https://github.com/hrodrig/pgwd)** — Compose
 - [Standalone binary](#standalone-binary)
 - [Docker single container](#docker-single-container)
 - [Docker Compose minimal](#docker-compose-minimal)
-- [Docker Compose Traefik HTTPS](#docker-compose-traefik-https)
-- [Observability optional](#observability-optional)
 - [Kubernetes Helm](#kubernetes-helm)
 - [Persistent data and secrets](#persistent-data-and-secrets)
 - [Repository layout](#repository-layout)
@@ -39,8 +37,6 @@ Deployment manifests for **[pgwd](https://github.com/hrodrig/pgwd)** — Compose
 | **Binary only** (no Docker) | [Standalone binary](#standalone-binary) |
 | **Single container** (`docker run`) | [Docker single container](#docker-single-container) |
 | **Compose, one service** (quick VPS) | [Docker Compose minimal](#docker-compose-minimal) |
-| **HTTPS + domain** (Traefik + Let’s Encrypt) | [Docker Compose Traefik HTTPS](#docker-compose-traefik-https) |
-| **Prometheus / Grafana / Loki** (after Traefik) | [Observability optional](#observability-optional) |
 | **Kubernetes** | [Kubernetes Helm](#kubernetes-helm) |
 
 Shared env template for Compose: copy **[`run/common/.env.example`](run/common/.env.example)** to **`${PGWD_HOST_DATA}/.env`**, set **`PGWD_HOST_DATA`** inside that file, and pass **`--env-file "${PGWD_HOST_DATA}/.env"`** to Compose. **Which Compose file?** **[`run/docker-compose/README.md`](run/docker-compose/README.md)**. Optional: **[`run/scripts/compose-stack.sh`](run/scripts/compose-stack.sh)** (`--help`). Deeper walkthroughs: **[`run/README.md`](run/README.md)**.
@@ -59,20 +55,18 @@ Shared env template for Compose: copy **[`run/common/.env.example`](run/common/.
 ```bash
 export PGWD_HOST_DATA=/home/pgwd/pgwd-data
 mkdir -p "$PGWD_HOST_DATA"
-export PGWD_SQLITE_PATH="${PGWD_HOST_DATA}/pgwd.db"
 export PGWD_DB_URL='postgres://user:pass@localhost:5432/mydb?sslmode=disable'
 export PGWD_INTERVAL=60
-export PGWD_HTTP_LISTEN=:8080   # optional: health + /api/pgwd/v1/metrics
 ./pgwd
 ```
 
-**Check:** with HTTP enabled, **`curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/api/pgwd/v1/healthz`** (expect **`200`**).
+Published **`v0.5.10`** in this guide uses **environment variables**, **Postgres**, optional **Slack/Loki**, and **process output** for checks. Anything else — **[pgwd README](https://github.com/hrodrig/pgwd/blob/main/README.md)**.
 
 **Stop:** `Ctrl+C`. Configuration: **[`contrib/pgwd.conf.example`](https://github.com/hrodrig/pgwd/blob/main/contrib/pgwd.conf.example)** and **[upstream README](https://github.com/hrodrig/pgwd/blob/main/README.md)**.
 
 **More:** **[`run/standalone/README.md`](run/standalone/README.md)** · [Linux](run/standalone/linux/README.md) · [macOS](run/standalone/macos/README.md) · [Windows](run/standalone/windows/README.md) · [*BSD](run/standalone/bsd/README.md) · [Solaris / illumos](run/standalone/solaris/README.md)
 
-**Cron, no daemon, no HTTP port:** **[Cron / one-shot](run/standalone/README.md#cron--one-shot-no-daemon-no-http)** (`PGWD_INTERVAL=0`, omit HTTP listen).
+**Cron, no long-lived daemon:** **[Cron / one-shot](run/standalone/README.md#cron--one-shot-no-daemon)** (`PGWD_INTERVAL=0`).
 
 **[↑ Contents](#table-of-contents)**
 
@@ -82,23 +76,19 @@ export PGWD_HTTP_LISTEN=:8080   # optional: health + /api/pgwd/v1/metrics
 
 **Goal:** one container, no Compose file.
 
-```bash
-export PGWD_HOST_DATA=/home/pgwd/pgwd-data
-mkdir -p "$PGWD_HOST_DATA"
+**`v0.5.10`** on GHCR in this guide is driven by **environment variables** (see **[`run/docker/README.md`](run/docker/README.md)**).
 
+```bash
 docker run -d \
-  -e PGWD_DB_URL='postgres://user:pass@host:5432/dbname?sslmode=disable' \
-  -e PGWD_HTTP_LISTEN=0.0.0.0:8080 \
-  -e PGWD_SQLITE_PATH=/var/lib/pgwd/pgwd.db \
-  -p 8080:8080 \
-  -v "${PGWD_HOST_DATA}:/var/lib/pgwd" \
   --name pgwd \
+  -e PGWD_DB_URL='postgres://user:pass@host:5432/dbname?sslmode=disable' \
+  -e PGWD_INTERVAL=60 \
   ghcr.io/hrodrig/pgwd:v0.5.10
 ```
 
-Use an image tag that exists on GHCR ([releases](https://github.com/hrodrig/pgwd/releases)); match **`PGWD_VERSION`** in [`run/common/.env.example`](run/common/.env.example). See **[`run/docker/README.md`](run/docker/README.md)** for **`PGWD_INTERVAL`**, optional notifiers, and **[one-shot / `--rm`](run/docker/README.md#one-shot-container-no-daemon)**. **[Compose index](run/docker-compose/README.md)** when you need minimal / Traefik / observability.
+Use an image tag that exists on GHCR ([releases](https://github.com/hrodrig/pgwd/releases)); match **`PGWD_VERSION`** in [`run/common/.env.example`](run/common/.env.example). See **[`run/docker/README.md`](run/docker/README.md)** for optional notifiers, **`PGWD_DRY_RUN`**, and **[one-shot / `--rm`](run/docker/README.md#one-shot-container-no-daemon)**. **[Compose index](run/docker-compose/README.md)** when you need the minimal Compose layout.
 
-**Check:** with HTTP enabled, `curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/api/pgwd/v1/healthz` (expect **`200`**).
+**Check:** `docker logs pgwd` — look for **`total=`** / **`active=`** when Postgres is reachable.
 
 **Remove:**
 
@@ -127,7 +117,7 @@ cp run/common/.env.example "${PGWD_HOST_DATA}/.env"
 docker compose --env-file "${PGWD_HOST_DATA}/.env" -f run/docker-compose/minimal/docker-compose.yml up -d
 ```
 
-**Check:** `curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:${PGWD_HOST_PORT:-8080}/api/pgwd/v1/healthz` (expect **`200`**).
+**Check:** `docker logs pgwd` — look for **`total=`** / **`active=`** when Postgres is reachable.
 
 **Remove:**
 
@@ -141,116 +131,36 @@ docker compose --env-file "${PGWD_HOST_DATA}/.env" -f run/docker-compose/minimal
 
 ---
 
-## Docker Compose Traefik HTTPS
+## Kubernetes Helm
 
-**Goal:** production-style TLS on your domain (ports **80** / **443**).
+**Naming:** This GitHub repository is **`pgwd-selfhosted`** (deployment manifests). The Helm chart lives under **`run/kubernetes/helm/pgwd/`** — **`pgwd`** is the **chart name** (see **`Chart.yaml`**). **Chart development** happens **only** here; **[pgwd](https://github.com/hrodrig/pgwd)** does **not** include **`contrib/helm/pgwd`** on **`main`**. After the **first chart release**, packaged charts (**`pgwd-<chart-version>.tgz`**) and [**`index.yaml`**](https://hrodrig.github.io/pgwd-selfhosted/index.yaml) on GitHub Pages / [Releases](https://github.com/hrodrig/pgwd-selfhosted/releases) will follow [**CONTRIBUTING.md**](CONTRIBUTING.md). **Git tags** for this repo use **`v<semver>`** per **`VERSION`**.
 
-**Prerequisites:** DNS **A/AAAA** for `PGWD_HOSTNAME` → this host; **80** and **443** reachable.
+**Install today (clone — no Helm repo required):**
 
 ```bash
 git clone https://github.com/hrodrig/pgwd-selfhosted.git
 cd pgwd-selfhosted
-export PGWD_HOST_DATA=/home/pgwd/pgwd-data
-mkdir -p "$PGWD_HOST_DATA"
-cp run/common/.env.example "${PGWD_HOST_DATA}/.env"
-# Edit "${PGWD_HOST_DATA}/.env": PGWD_DB_URL, PGWD_HOSTNAME, ACME_EMAIL, PGWD_UID, PGWD_GID,
-# PGWD_VERSION, and PGWD_HOST_DATA (same absolute path as above — SQLite lives next to this file)
-
-docker compose --env-file "${PGWD_HOST_DATA}/.env" -f run/docker-compose/traefik/docker-compose.yml up -d
+helm show values ./run/kubernetes/helm/pgwd > my-values.yaml
+# Edit my-values.yaml — do not commit secrets to git (Postgres URL, Slack/Loki, image.tag, etc.).
+helm upgrade --install pgwd ./run/kubernetes/helm/pgwd -n pgwd --create-namespace -f my-values.yaml
 ```
 
-**Check:** `curl -sS -o /dev/null -w '%{http_code}\n' https://your-hostname/` after DNS and TLS succeed.
+Quick **dry-run** try (DB URL + no notifier secrets): [run/kubernetes/helm/pgwd/README.md](run/kubernetes/helm/pgwd/README.md) · kind: **`make test-kind-postgres`** (Postgres only) or **`make test-helm-kind`** (+ Helm pgwd) — [testing/kind/README.md](testing/kind/README.md).
 
-**Remove:**
-
-```bash
-docker compose --env-file "${PGWD_HOST_DATA}/.env" -f run/docker-compose/traefik/docker-compose.yml down
-```
-
-**More:** [run/docker-compose/traefik/README.md](run/docker-compose/traefik/README.md) · [Compose index](run/docker-compose/README.md)
-
-**[↑ Contents](#table-of-contents)**
-
----
-
-## Observability optional
-
-**Goal:** Prometheus, Grafana, Loki, etc. **Requires** the Traefik stack above so network **`pgwd_edge`** exists. Use the **same** **`PGWD_HOST_DATA`** as your main **`${PGWD_HOST_DATA}/.env`** (SQLite and secrets in one host directory).
-
-```bash
-export PGWD_HOST_DATA=/home/pgwd/pgwd-data
-mkdir -p "$PGWD_HOST_DATA"
-cp run/docker-compose/observability/observability.env.example "${PGWD_HOST_DATA}/.env.observability"
-# Edit "${PGWD_HOST_DATA}/.env.observability" — set GRAFANA_ADMIN_PASSWORD at minimum (must match PGWD_HOST_DATA used for Traefik / main .env)
-```
-
-**Expose Grafana on HTTPS via Traefik (public hostname)** — use this if you want Grafana on the internet with the **same** Traefik / Let’s Encrypt as pgwd (recommended once DNS is ready):
-
-1. In **`"${PGWD_HOST_DATA}/.env.observability"`**, set a dedicated FQDN and matching root URL (must match what users open in the browser):
-
-   ```bash
-   GRAFANA_HOSTNAME=pgwd-obs.example.com
-   GRAFANA_ROOT_URL=https://pgwd-obs.example.com
-   ```
-
-2. **DNS:** point **`GRAFANA_HOSTNAME`** to this host (A/AAAA or CNAME), same idea as **`PGWD_HOSTNAME`** for the main app.
-
-3. Start the stack with **both** Compose files (the second file adds Traefik **labels** only; it does not add another Traefik container). Use **both** `-f` lines on every `up` / `pull` / `down` that recreates Grafana, or HTTPS routing breaks until you fix it.
-
-```bash
-docker compose --env-file "${PGWD_HOST_DATA}/.env.observability" -p pgwd-obs \
-  -f run/docker-compose/observability/docker-compose.observability.yml \
-  -f run/docker-compose/observability/docker-compose.observability.traefik.yml \
-  up -d
-```
-
-**Local / LAN only (no Traefik route for Grafana)** — Grafana on **`http://localhost:${GRAFANA_PORT:-3000}`**; omit **`docker-compose.observability.traefik.yml`**:
-
-```bash
-docker compose --env-file "${PGWD_HOST_DATA}/.env.observability" -p pgwd-obs \
-  -f run/docker-compose/observability/docker-compose.observability.yml up -d
-```
-
-**Check / troubleshoot / SSH tunnel:** **[run/docker-compose/observability/README.md](run/docker-compose/observability/README.md)** (curl checks, `down -v`). **Compose overview:** [run/docker-compose/README.md](run/docker-compose/README.md).
-
-**Remove (containers + stack volumes):** use the **same** `-f` list you used for `up`. Examples:
-
-```bash
-# If you started with Traefik overlay (two files), remove with two files:
-docker compose --env-file "${PGWD_HOST_DATA}/.env.observability" -p pgwd-obs \
-  -f run/docker-compose/observability/docker-compose.observability.yml \
-  -f run/docker-compose/observability/docker-compose.observability.traefik.yml \
-  down -v
-
-# If you started with only the base file:
-docker compose --env-file "${PGWD_HOST_DATA}/.env.observability" -p pgwd-obs \
-  -f run/docker-compose/observability/docker-compose.observability.yml down -v
-```
-
-**[↑ Contents](#table-of-contents)**
-
----
-
-## Kubernetes Helm
-
-**Install** from the **Helm repository** on **GitHub Pages** ([**`index.yaml`**](https://hrodrig.github.io/pgwd-selfhosted/index.yaml); chart packages are attached to [GitHub Releases](https://github.com/hrodrig/pgwd-selfhosted/releases) as **`pgwd-<version>.tgz`**). The chart is maintained and published **here**, not from the [pgwd](https://github.com/hrodrig/pgwd) application repository.
-
-**GitHub Pages:** The [Pages URL](https://hrodrig.github.io/pgwd-selfhosted/) serves **`index.yaml`** for Helm and includes a short **HTML landing** for humans. **`helm repo add`** only needs the HTTPS base URL — you do not have to open the site in a browser.
-
-**Naming (this repo vs the chart):** This GitHub repository is **`pgwd-selfhosted`** (deployment manifests only). The Helm chart lives under **`run/kubernetes/helm/pgwd/`** — **`pgwd`** is the **chart name** (see `name:` in **`Chart.yaml`**). Published chart packages use **`pgwd-<chart-version>.tgz`**; **Git tags** for this repo use **`v<semver>`** (e.g. **`v0.1.2`**) per **`VERSION`**.
-
-Generate **`my-values.yaml`** from the published chart (defaults), **edit** it for your cluster (Postgres URL, Slack/Loki, **`image.tag`** to match a [pgwd release](https://github.com/hrodrig/pgwd/releases), resources, etc.), then install:
+**After the first chart release (Helm repo on GitHub Pages):** when **`helm search repo pgwd`** works, you can install from the published index instead of the chart path:
 
 ```bash
 helm repo add pgwd https://hrodrig.github.io/pgwd-selfhosted
 helm repo update
 helm search repo pgwd -l
-helm show values pgwd/pgwd --version 0.1.1 > my-values.yaml
+helm show values pgwd/pgwd --version 0.1.5 > my-values.yaml
 # Edit my-values.yaml — do not commit secrets to git.
-helm upgrade --install pgwd pgwd/pgwd --version 0.1.1 -n pgwd --create-namespace -f my-values.yaml
+helm upgrade --install pgwd pgwd/pgwd --version 0.1.5 -n pgwd --create-namespace -f my-values.yaml
 ```
 
-Use the **`version:`** shown in **`helm search`** if it differs from **`0.1.1`**. Full options: [run/kubernetes/helm/pgwd/README.md](run/kubernetes/helm/pgwd/README.md).
+Use the **`version:`** from **`helm search`** once **`index.yaml`** is live (it may differ from **`0.1.5`**). If **`helm repo add`** or search fails, the repo may not be published yet — use the clone path above.
+
+Full options: [run/kubernetes/helm/pgwd/README.md](run/kubernetes/helm/pgwd/README.md).
 
 **Secrets (recommended):** do **not** put **`postgres://`** URLs or webhooks in shell history. Prefer **`secrets.existingSecret`** with keys **`url`**, **`slack-webhook`**, **`loki-url`** (see **`secrets`** in [`values.yaml`](run/kubernetes/helm/pgwd/values.yaml)):
 
@@ -263,25 +173,13 @@ kubectl create secret generic pgwd-secrets \
   --from-literal=loki-url='http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push'
 ```
 
-Then in **`my-values.yaml`**: set **`secrets.create: false`**, **`secrets.existingSecret: pgwd-secrets`**, and keep **`env.PGWD_*`** for non-secret settings (interval, log level, HTTP listen, etc.).
+Then in **`my-values.yaml`**: set **`secrets.create: false`**, **`secrets.existingSecret: pgwd-secrets`**, and keep **`env.PGWD_*`** for non-secret settings (interval, log level, etc.).
 
-You may use **`config.enabled: true`** for multiple databases (see chart **[README](run/kubernetes/helm/pgwd/README.md)**).
+You may use **`config.enabled: true`** for a full config file (`db:` + notifications, etc.); see the chart **[README](run/kubernetes/helm/pgwd/README.md)**.
 
-If **`helm repo add`** fails (network, Pages outage, or first minutes after a new release), try again later or install **from this repository** below.
+See [`values.yaml`](run/kubernetes/helm/pgwd/values.yaml) in-tree for defaults.
 
-**From this repository (sources, templates, contributing):** the chart under **`run/kubernetes/helm/pgwd/`** is the same chart; clone it to inspect YAML, open issues, or install without the published repo:
-
-```bash
-git clone https://github.com/hrodrig/pgwd-selfhosted.git
-cd pgwd-selfhosted
-helm show values ./run/kubernetes/helm/pgwd > my-values.yaml
-# Edit my-values.yaml — do not commit secrets to git.
-helm upgrade --install pgwd ./run/kubernetes/helm/pgwd -n pgwd --create-namespace -f my-values.yaml
-```
-
-See **[`values.yaml`](run/kubernetes/helm/pgwd/values.yaml)** in-tree for defaults.
-
-**Check:** `kubectl get pods -n pgwd -l app.kubernetes.io/name=pgwd` and the Service (e.g. **`kubectl get svc -n pgwd`**) if you expose HTTP/metrics.
+**Check:** `kubectl get pods -n pgwd -l app.kubernetes.io/name=pgwd` and **`kubectl logs`** for Postgres stats lines.
 
 **Remove:**
 
@@ -297,9 +195,9 @@ helm uninstall pgwd -n pgwd
 
 ## Persistent data and secrets
 
-*Recommended on servers:* colocate SQLite and env files outside the clone (see below).
+*Recommended on servers:* colocate env files (and any local state) outside the clone (see below).
 
-Keep **SQLite**, **`${PGWD_HOST_DATA}/.env`**, and **`${PGWD_HOST_DATA}/.env.observability`** in one host directory (e.g. `/home/pgwd/pgwd-data/`). Set **`PGWD_HOST_DATA`** inside the main **`.env`** to that absolute path. Run Compose from the clone root with **`--env-file "${PGWD_HOST_DATA}/.env"`** for the app stacks and **`--env-file "${PGWD_HOST_DATA}/.env.observability"`** for observability (`-p pgwd-obs`). See [`run/common/.env.example`](run/common/.env.example) and [`run/docker-compose/observability/observability.env.example`](run/docker-compose/observability/observability.env.example). Optional helper: **[`run/scripts/compose-stack.sh`](run/scripts/compose-stack.sh)** (`./run/scripts/compose-stack.sh --help`).
+Keep **`${PGWD_HOST_DATA}/.env`** in one host directory (e.g. `/home/pgwd/pgwd-data/`). Set **`PGWD_HOST_DATA`** inside that file to that absolute path. Run Compose from the clone root with **`--env-file "${PGWD_HOST_DATA}/.env"`**. See [`run/common/.env.example`](run/common/.env.example). Optional helper: **[`run/scripts/compose-stack.sh`](run/scripts/compose-stack.sh)** (`./run/scripts/compose-stack.sh --help`).
 
 **[↑ Contents](#table-of-contents)**
 
@@ -314,10 +212,8 @@ run/
 ├── standalone/README.md         # Index; linux, macos, windows, solaris/, bsd/{freebsd,openbsd,netbsd,dragonfly}/
 ├── docker/                      # docker run
 ├── docker-compose/
-│   ├── README.md            # minimal vs traefik vs observability
-│   ├── minimal/
-│   ├── traefik/
-│   └── observability/
+│   ├── README.md            # minimal
+│   └── minimal/
 └── kubernetes/
     ├── helm/pgwd/           # Helm chart named "pgwd" (app); not the repo name
     └── manifests/
@@ -363,7 +259,7 @@ run/
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - Agent guidelines: [`AGENTS.md`](AGENTS.md)
 
-Thanks for self-hosting **[pgwd](https://github.com/hrodrig/pgwd)** with these manifests. We would love to hear how **easy or difficult** it was to run **pgwd** self-hosted (Compose, Helm, `docker run`, observability, or anything in [`run/`](run/)). Share feedback in **[GitHub Issues](https://github.com/hrodrig/pgwd-selfhosted/issues)** or, if enabled for this repository, **Discussions**.
+Thanks for self-hosting **[pgwd](https://github.com/hrodrig/pgwd)** with these manifests. We would love to hear how **easy or difficult** it was to run **pgwd** self-hosted (Compose, Helm, `docker run`, or anything in [`run/`](run/)). Share feedback in **[GitHub Issues](https://github.com/hrodrig/pgwd-selfhosted/issues)** or, if enabled for this repository, **Discussions**.
 
 **[↑ Contents](#table-of-contents)**
 

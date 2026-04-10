@@ -2,7 +2,7 @@ apiVersion: v2
 name: pgwd
 description: Postgres Watch Dog - monitor PostgreSQL connection counts and notify via Slack/Loki
 type: application
-version: 0.1.1
+version: 0.1.5
 appVersion: "v0.5.10"
 keywords:
   - postgres

@@ -2,28 +2,21 @@
 
 ← [Back to run/README](../README.md) · [Compose](../docker-compose/README.md).
 
-Run the published image without Compose. Use the same **host directory** idea as in **`run/common/.env.example`**: set **`PGWD_HOST_DATA`** to an **absolute path** on the server (SQLite and optional `.env` colocation).
+Run the published image without Compose. The **`v0.5.10`** image on GHCR matches **[pgwd](https://github.com/hrodrig/pgwd) v0.5.10**: it monitors Postgres and can notify via Slack/Loki. Configure with **environment variables** (or a **mounted config file** and **`PGWD_CONFIG`** — see **upstream** docs).
 
 ```bash
-export PGWD_HOST_DATA=/home/pgwd/pgwd-data
-mkdir -p "$PGWD_HOST_DATA"
-
 docker run -d \
-  -e PGWD_DB_URL='postgres://user:pass@host:5432/dbname?sslmode=disable' \
-  -e PGWD_HTTP_LISTEN=0.0.0.0:8080 \
-  -e PGWD_SQLITE_PATH=/var/lib/pgwd/pgwd.db \
-  -e PGWD_INTERVAL=60 \
-  -p 8080:8080 \
-  -v "${PGWD_HOST_DATA}:/var/lib/pgwd" \
   --name pgwd \
+  -e PGWD_DB_URL='postgres://user:pass@host:5432/dbname?sslmode=disable' \
+  -e PGWD_INTERVAL=60 \
   ghcr.io/hrodrig/pgwd:v0.5.10
 ```
 
-Replace **`PGWD_DB_URL`** with a real URL. Optional: add **`PGWD_NOTIFICATIONS_SLACK_WEBHOOK`** or **`PGWD_NOTIFICATIONS_LOKI_URL`**. The mount path **`/var/lib/pgwd`** matches the default SQLite location used in Compose and Helm.
+Replace **`PGWD_DB_URL`** with a real URL. Optional: **`PGWD_CLIENT`**, **`PGWD_DRY_RUN=true`** for a safe first run, **`PGWD_NOTIFICATIONS_SLACK_WEBHOOK`**, **`PGWD_NOTIFICATIONS_LOKI_URL`**, etc. — see the upstream **[README](https://github.com/hrodrig/pgwd/blob/main/README.md)**.
 
 Use an image tag that exists on GHCR ([releases](https://github.com/hrodrig/pgwd/releases)); match **`PGWD_VERSION`** in **[`run/common/.env.example`](../common/.env.example)**.
 
-**Check:** `curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/api/pgwd/v1/healthz` (expect **`200`**).
+**Check:** `docker logs pgwd` (or `docker logs -f pgwd`) — look for lines with **`total=`** / **`active=`** / **`max_connections=`** when the DB is reachable.
 
 **Remove:**
 
@@ -31,27 +24,22 @@ Use an image tag that exists on GHCR ([releases](https://github.com/hrodrig/pgwd
 docker stop pgwd && docker rm pgwd
 ```
 
-For **all** environment variables supported by the binary/container, see the upstream **[README](https://github.com/hrodrig/pgwd/blob/main/README.md)** and **`contrib/pgwd.conf.example`** on **`main`**.
+**Compose vs `docker run`:** different layouts may apply for other releases. For Compose with **[`run/common/.env.example`](../common/.env.example)**, use **[`run/docker-compose/minimal`](../docker-compose/minimal/README.md)**. This **`docker run`** section tracks **v0.5.10** as documented here.
 
-For **Compose-based** setups (persistent layout, Traefik, observability), use **[`run/docker-compose/README.md`](../docker-compose/README.md)**.
+For **Compose-based** setups, use **[`run/docker-compose/README.md`](../docker-compose/README.md)**.
 
 ### One-shot container (no daemon)
 
-For a **single run** then exit (e.g. from **cron** on the host), use **`--rm`** and **`PGWD_INTERVAL=0`**. Omit **`-p`** and **`PGWD_HTTP_LISTEN`** if you do **not** want an HTTP listener inside the container.
+For a **single run** then exit (e.g. from **cron** on the host), use **`--rm`** and **`PGWD_INTERVAL=0`**.
 
 ```bash
-export PGWD_HOST_DATA=/home/pgwd/pgwd-data
-mkdir -p "$PGWD_HOST_DATA"
-
 docker run --rm \
   -e PGWD_INTERVAL=0 \
   -e PGWD_DB_URL='postgres://user:pass@host:5432/dbname?sslmode=disable' \
-  -e PGWD_SQLITE_PATH=/var/lib/pgwd/pgwd.db \
-  -v "${PGWD_HOST_DATA}:/var/lib/pgwd" \
   ghcr.io/hrodrig/pgwd:v0.5.10
 ```
 
-Add notifier env vars as needed. Same **cron / no HTTP** ideas as **[standalone](../standalone/README.md#cron--one-shot-no-daemon-no-http)**.
+Add notifier env vars as needed. Same **cron / one-shot** ideas as **[standalone](../standalone/README.md#cron--one-shot-no-daemon)**.
 
 ---
 

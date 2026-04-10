@@ -38,13 +38,10 @@
     or 'Recreate' in (compose_up.stdout | default(''))
     or 'recreated' in (compose_up.stderr | default(''))
 
-- name: Wait for pgwd health endpoint
-  ansible.builtin.uri:
-    url: "http://127.0.0.1:{{ pgwd_host_port | default(8080) }}/api/pgwd/v1/healthz"
-    method: GET
-    status_code: 200
-    timeout: 5
-  register: health
-  until: health.status == 200
-  retries: 30
+- name: Wait for pgwd Postgres stats in container logs
+  ansible.builtin.shell: docker logs pgwd 2>&1 | tail -400
+  register: pgwd_log_check
+  until: pgwd_log_check.rc == 0 and ('total=' in pgwd_log_check.stdout) and ('active=' in pgwd_log_check.stdout)
+  retries: 45
   delay: 2
+  changed_when: false

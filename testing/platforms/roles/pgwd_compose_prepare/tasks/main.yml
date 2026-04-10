@@ -38,7 +38,7 @@
     dest: "{{ pgwd_host_data }}/.env"
     mode: "0600"
 
-- name: Set PGWD_HOST_DATA ownership for pgwd container user (SQLite bind mount)
+- name: Set PGWD_HOST_DATA ownership for pgwd container user (layout / stacks that bind-mount data)
   ansible.builtin.file:
     path: "{{ pgwd_host_data }}"
     state: directory

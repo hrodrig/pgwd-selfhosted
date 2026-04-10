@@ -7,25 +7,35 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-04-09
+
 ### Changed
 
-- **Helm chart `pgwd`:** default **`image.tag`** **`v0.5.10`** (GHCR tags match Git **`v*`** releases; **`0.5.10`** does not exist on ghcr). **`values.yaml`**, chart README, and **`_helpers.tpl`** note. Chart **`version`** **0.1.1**.
+- Bump repository **`VERSION`** to **0.1.5** (badge, **`AGENTS.md`**). Root **README** replaces the **work-in-progress** banner with a **releases / `develop`** note.
+- **Compose minimal (`run/docker-compose/minimal`):** aligned with published **`v0.5.10`** — single env-driven service, no host **port** map, no extra **volume** on pgwd. Docs and **Ansible** **`testing/platforms`** use **`docker logs`** (stats lines) for checks. **Traefik** and **Docker Compose observability** stacks **removed** (not shipped in this repo). Use **`docker logs`** and pgwd **Slack/Loki** notifiers, or your own observability stack if needed.
+- **Helm chart `pgwd` (`Chart.yaml` `version` 0.1.5):** **`values.schema.json`** — **`helm lint`** / **`helm install|upgrade`** validate merged values (catch typos, **`replicaCount`**, **`image.pullPolicy`**, **`env`** shape, non-empty **`config.extra`** when **`config.enabled`**). Defaults for **`image.tag`** **`v0.5.10`**. Removed **`Service`**, **`PersistentVolumeClaim`**, and **`persistence` / `service` values** (not used by the published image). **`Deployment`** mounts **`/etc/pgwd`** only when **`config.enabled`**. **`testing/kind`** / **`test-helm-kind`**: log-based Postgres check only. **`env`** values may be **`secretKeyRef`** maps or scalars (quoted). CI kubeconform scenario: **`config.enabled=true`** instead of persistence flags.
 - **Ansible notification test:** fail the play when **`-force-notification`** produces **`connect_failure`** / “could not connect to Postgres” in mock captures (Loki + Slack), not only when payloads contain **`pgwd`**.
-- **Compose image:** **`PGWD_IMAGE`** optional full reference in **`.env`**; **`minimal`** and **`Traefik`** use **`${PGWD_IMAGE:-ghcr.io/hrodrig/pgwd:${PGWD_VERSION:-v0.5.10}}`**. Ansible template and **`hosts.yml.example`** support **`pgwd_image`**; **`run/common/.env.example`** and compose index README updated.
-- **Compose — pgwd validation:** **minimal** stack defaults **`PGWD_DRY_RUN=true`** when unset so empty Slack/Loki does not cause a container **restart loop**. **Traefik** stack defaults **`PGWD_DRY_RUN=false`** — set **`PGWD_DRY_RUN=true`** or configure notifiers in **`.env`**. **`run/common/.env.example`**, minimal README, and Ansible **`env.compose.j2`** updated accordingly.
+- **Compose image:** **`PGWD_IMAGE`** optional full reference in **`.env`**; **`minimal`** uses **`${PGWD_IMAGE:-ghcr.io/hrodrig/pgwd:${PGWD_VERSION:-v0.5.10}}`**. Ansible template and **`hosts.yml.example`** support **`pgwd_image`**; **`run/common/.env.example`** and compose index README updated.
+- **Compose — pgwd validation:** **minimal** stack defaults **`PGWD_DRY_RUN=true`** when unset so empty Slack/Loki does not cause a container **restart loop**. Set **`PGWD_DRY_RUN=false`** when notifiers are configured. **`run/common/.env.example`**, minimal README, and Ansible **`env.compose.j2`** updated accordingly.
 - **Ansible notification test:** **`docker exec -e PGWD_DRY_RUN=false`** so **`-force-notification`** still hits the mock when the long-running container uses dry-run (inherited env would otherwise skip sends).
 - **`run/scripts/compose-stack.sh`** (stack **minimal**): if **`.env`** has no **`PGWD_DRY_RUN`** line and the shell variable is unset, **`export PGWD_DRY_RUN=true`** before **`docker compose`** so interpolation always enables dry-run without notifiers (helps hosts on an older `docker-compose.yml` missing the default).
 - Root **`Makefile`**: bare **`make`** prints **help** only; run **`make test-compose-platforms`** explicitly for Ansible (avoids accidental full-cycle runs).
 
 ### Added
 
-- **`testing/platforms/`** — Ansible playbooks (setup → minimal **compose** up → **healthz** → **per-host notification mock** + **`docker exec … -force-notification`** → teardown) and **`make test-compose-platforms`** for validating **Compose** on many VPS in parallel, analogous to **pgwd** **`make test-platforms`** but for **`run/docker-compose/minimal`**. See **[`testing/platforms/README.md`](testing/platforms/README.md)**; **`inventory/hosts.yml`** is gitignored (copy **`hosts.yml.example`**).
+- **`make release-check`** — **`helm lint`**, **`helm template`** + **kubeconform** (same scenarios as **helm-lint** CI), and minimal **`docker compose … config`** with a dummy **`PGWD_DB_URL`**. Documented in **`CONTRIBUTING.md`**, **`AGENTS.md`**, and **`.cursor/rules/release-infra.mdc`**.
+- **`testing/kind/`** and **`testing/scripts/test-helm-kind.sh`** — optional **kind** smoke tests; **`make test-kind-postgres`** (Postgres only) and **`make test-helm-kind`** (Helm **pgwd** + log-based Postgres check).
+- **`testing/platforms/`** — Ansible playbooks (setup → minimal **compose** up → wait for **Postgres stats in `docker logs`** → **per-host notification mock** + **`docker exec … -force-notification`** → teardown) and **`make test-compose-platforms`** for validating **Compose** on many VPS in parallel, analogous to **pgwd** **`make test-platforms`** but for **`run/docker-compose/minimal`**. See **[`testing/platforms/README.md`](testing/platforms/README.md)**; **`inventory/hosts.yml`** is gitignored (copy **`hosts.yml.example`**).
 
 ### Documentation
 
 - **`testing/platforms/README.md`** — **Troubleshooting:** (1) Docker daemon / **DOCKER** NAT chain and kernel vs **`/lib/modules`** mismatch on **Arch** (reboot, **`nf_tables`**, reinstall **`iptables`**). (2) **`docker compose`** network create: **`DOCKER-FORWARD`** / **`No chain/target/match by that name`** — **`br_netfilter`**, **`bridge-nf-call-iptables`**, **`docker` restart**, verify iptables backend. (3) **Arch rolling** — **nft vs legacy** warning, inspect **`br-`** rules **with Compose up**, **Postgres** checks are not Arch-specific.
-- **Docker / Compose:** [`run/docker-compose/README.md`](run/docker-compose/README.md) index; [`run/docker/README.md`](run/docker/README.md) one-shot **`docker run --rm`** with **`PGWD_INTERVAL=0`**; cross-links minimal / Traefik / observability / standalone cron; root README and [`run/README.md`](run/README.md); [`run/common/.env.example`](run/common/.env.example) points at compose index.
-- **`run/scripts/compose-stack.sh`** — wrapper for **`docker compose`** on **minimal**, **Traefik**, and **observability** (`--env-file`, **`-f`**, project **`pgwd-obs`**); **`--traefik`** for the Grafana overlay. **[`run/scripts/README.md`](run/scripts/README.md)**; links from **`run/README.md`**, root **README**, **`docker-compose/README.md`**, and per-stack READMEs.
+- **Docker / Compose:** [`run/docker-compose/README.md`](run/docker-compose/README.md) index; [`run/docker/README.md`](run/docker/README.md) one-shot **`docker run --rm`** with **`PGWD_INTERVAL=0`**; cross-links minimal / standalone cron; root README and [`run/README.md`](run/README.md); [`run/common/.env.example`](run/common/.env.example) points at compose index.
+- **`run/scripts/compose-stack.sh`** — wrapper for **`docker compose`** on **minimal** only (`--env-file`, **`-f`**). **[`run/scripts/README.md`](run/scripts/README.md)**; links from **`run/README.md`**, root **README**, **`docker-compose/README.md`**, and per-stack READMEs.
+
+### Removed
+
+- **`run/docker-compose/observability/`** — Grafana + Loki + Promtail stack (and **`.env.observability`** / **`pgwd-obs`** flow). Operators who need log aggregation run their own stack or rely on **`docker logs`** / pgwd **Loki** push URLs.
 
 ## [0.1.2] - 2026-04-06
 
@@ -35,10 +45,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
-- **Standalone:** [`run/standalone/README.md`](run/standalone/README.md) index; Linux / macOS / Windows guides with **`PGWD_HOST_DATA`**, **`PGWD_SQLITE_PATH`**, optional **`-config`**, and config-file vs env note; root README and [`run/README.md`](run/README.md) cross-links.
-- **Standalone — cron / one-shot:** [Cron / one-shot (no daemon, no HTTP)](run/standalone/README.md#cron--one-shot-no-daemon-no-http) — `PGWD_INTERVAL=0`, omit `PGWD_HTTP_LISTEN`; linked from *BSD index and [`run/README.md`](run/README.md).
+- **Standalone:** [`run/standalone/README.md`](run/standalone/README.md) index; Linux / macOS / Windows guides with **`PGWD_HOST_DATA`**, upstream **contrib** / README cross-links, and config-file vs env note; root README and [`run/README.md`](run/README.md) cross-links.
+- **Standalone — cron / one-shot:** [Cron / one-shot (no daemon)](run/standalone/README.md#cron--one-shot-no-daemon) — `PGWD_INTERVAL=0`; linked from *BSD index and [`run/README.md`](run/README.md).
 - **Standalone — architectures:** [CPU architectures (release binaries)](run/standalone/README.md#cpu-architectures-release-binaries) — `amd64` / `arm64` / `riscv64` matrix from [pgwd `.goreleaser.yaml`](https://github.com/hrodrig/pgwd/blob/main/.goreleaser.yaml); no SPARC; Solaris amd64-only; RISC-V not on DragonFly/macOS/Windows/Solaris in releases.
-- **Standalone *BSD / Solaris:** [`run/standalone/bsd/`](run/standalone/bsd/README.md) (per-OS dirs); FreeBSD **`sysutils/pgwd`** / **`pkg install`**; [`run/standalone/solaris/README.md`](run/standalone/solaris/README.md) (illumos / Solaris **amd64**, SMF hints).
+- **Standalone *BSD / Solaris:** [`run/standalone/bsd/`](run/standalone/bsd/README.md) (per-OS dirs); FreeBSD **tarball primary**, upstream port tracked in **pgwd** (**bug 294001**, **contrib/freebsd**; do not assume **`pkg install`**); [`run/standalone/solaris/README.md`](run/standalone/solaris/README.md) (illumos / Solaris **amd64**, SMF hints).
 - **Standalone macOS:** [`run/standalone/macos/README.md`](run/standalone/macos/README.md) — **Homebrew** (`brew install hrodrig/pgwd/pgwd`) plus tarball path; shared **`PGWD_HOST_DATA`** section.
 
 ## [0.1.1] - 2026-04-06
@@ -59,10 +69,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 - Initial repository: layout and docs modeled on **gghstats-selfhosted**, adapted for **[pgwd](https://github.com/hrodrig/pgwd)** (Postgres Watch Dog).
 - **Compose:** minimal stack, Traefik + Let’s Encrypt (**`pgwd_edge`**), optional Prometheus / Grafana / Loki (**`pgwd-obs`**) with scrape target **`/api/pgwd/v1/metrics`**.
 - **Shared env:** **`PGWD_HOST_DATA`**, **`PGWD_DB_URL`**, **`PGWD_VERSION`**, optional Slack/Loki variables ([`run/common/.env.example`](run/common/.env.example)).
-- **Helm chart** at [`run/kubernetes/helm/pgwd`](run/kubernetes/helm/pgwd) (chart **`pgwd`**, sourced from upstream **contrib/helm/pgwd**).
+- **Helm chart** at [`run/kubernetes/helm/pgwd`](run/kubernetes/helm/pgwd) (chart **`pgwd`** — deployment chart lives in this repo, not under **pgwd** **`contrib/helm`**).
 - **Community / agent** docs carried over with project names updated (**`CONTRIBUTING.md`**, **`AGENTS.md`**, **`.cursor/rules`**, etc.).
 
-[Unreleased]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.2...HEAD
+### Note
+
+The **0.1.0** Compose bullet above described **Traefik**, a bundled observability stack, and **Prometheus** scrape examples. Those paths were **removed** later on **`develop`**. The current tree is **minimal Compose** only; see [`run/docker-compose/README.md`](run/docker-compose/README.md) and **pgwd `v0.5.10`** alignment in the root README.
+
+[Unreleased]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.5
 [0.1.2]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.2
 [0.1.1]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.1
 [0.1.0]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.0

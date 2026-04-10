@@ -18,13 +18,6 @@ services:
       - PGWD_LOG_LEVEL=${PGWD_LOG_LEVEL:-info}
       # Without Slack/Loki URLs, pgwd exits unless dry-run is on (otherwise restart loop). Default true for minimal/lab; set false when notifiers are set.
       - PGWD_DRY_RUN=${PGWD_DRY_RUN:-true}
-      - PGWD_HTTP_LISTEN=0.0.0.0:8080
-      - PGWD_SQLITE_PATH=/var/lib/pgwd/pgwd.db
       - PGWD_NOTIFICATIONS_SLACK_WEBHOOK=${PGWD_NOTIFICATIONS_SLACK_WEBHOOK:-}
       - PGWD_NOTIFICATIONS_LOKI_URL=${PGWD_NOTIFICATIONS_LOKI_URL:-}
-    ports:
-      - "${PGWD_HOST_PORT:-8080}:8080"
-    volumes:
-      # Host path for SQLite (prefer absolute, e.g. /var/lib/pgwd). Default: repo data/ via path relative to this file.
-      - ${PGWD_HOST_DATA:-../../../data}:/var/lib/pgwd
     logging: *default-logging

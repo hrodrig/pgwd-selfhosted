@@ -47,7 +47,8 @@ jobs:
             git checkout --orphan gh-pages-init
             git rm -rf . 2>/dev/null || true
             printf '%s\n' '# Helm chart index (updated by chart-releaser)' > README.md
-            git add README.md
+            : > .nojekyll
+            git add README.md .nojekyll
             git commit -m "chore: initialize gh-pages for Helm chart index"
             git push origin HEAD:gh-pages
             git checkout "$TAG_SHA"
@@ -62,21 +63,24 @@ jobs:
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
-      # Static landing page for browsers (Helm still uses index.yaml only). Source file lives on the
-      # default branch / tag; copy to gh-pages after chart-releaser updates the index.
+      # Static landing page for browsers (Helm still uses index.yaml only). .nojekyll disables Jekyll so
+      # GitHub Pages serves index.html instead of rendering README.md as the project homepage.
       - name: Publish Helm repo landing page (GitHub Pages)
         run: |
           set -euo pipefail
-          LANDING_SRC="${GITHUB_WORKSPACE}/run/kubernetes/helm/helm-repo-landing/index.html"
-          test -f "$LANDING_SRC"
-          cp "$LANDING_SRC" /tmp/helm-pages-index.html
+          LANDING_DIR="${GITHUB_WORKSPACE}/run/kubernetes/helm/helm-repo-landing"
+          test -f "$LANDING_DIR/index.html"
+          test -f "$LANDING_DIR/.nojekyll"
+          cp "$LANDING_DIR/index.html" /tmp/helm-pages-index.html
+          cp "$LANDING_DIR/.nojekyll" /tmp/helm-pages-nojekyll
           git fetch origin gh-pages
           git checkout gh-pages
           cp /tmp/helm-pages-index.html index.html
-          git add index.html
+          cp /tmp/helm-pages-nojekyll .nojekyll
+          git add index.html .nojekyll
           if git diff --staged --quiet; then
-            echo "index.html unchanged on gh-pages"
+            echo "index.html / .nojekyll unchanged on gh-pages"
           else
-            git commit -m "docs(helm): sync GitHub Pages landing for Helm index"
+            git commit -m "docs(helm): sync GitHub Pages landing + .nojekyll for Helm index"
             git push origin gh-pages
           fi

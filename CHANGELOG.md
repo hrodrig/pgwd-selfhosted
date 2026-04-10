@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **GitHub Pages:** ship **`.nojekyll`** on **`gh-pages`** with **`helm-repo-landing`** so the site shows the curated **`index.html`** (like **gghstats-selfhosted**) instead of Jekyll rendering the bootstrap **`README.md`** / repo title alone.
 - **Release Charts:** set **`skip_existing: true`** on **chart-releaser** so workflow re-runs do not fail with GitHub **422** (`tag_name` already exists for **`pgwd-<chart-version>`**); **`gh-pages`** and **landing** steps can complete after retries or **`workflow_dispatch`**.
 
 ### Added

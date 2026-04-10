@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Helm chart repo · pgwd (self-hosted)</title>
+  <!-- Match gghstats-selfhosted gh-pages: static HTML; .nojekyll disables Jekyll on GitHub Pages. -->
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; max-width: 42rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.55; color: #1a1a1a; }
     h1 { font-size: 1.35rem; margin-top: 0; }
@@ -28,15 +29,12 @@
   <h2>Add the repo and install</h2>
   <pre><code>helm repo add pgwd https://hrodrig.github.io/pgwd-selfhosted
 helm repo update
-helm search repo pgwd -l
-helm show values pgwd/pgwd --version &lt;chart-semver&gt; &gt; my-values.yaml
-# edit my-values.yaml, then:
-helm upgrade --install pgwd pgwd/pgwd -n pgwd --create-namespace -f my-values.yaml</code></pre>
-  <p class="muted">Replace <code>&lt;chart-semver&gt;</code> with the <code>CHART VERSION</code> from <code>helm search</code> (chart package semver, not the pgwd app tag).</p>
+helm install pgwd pgwd/pgwd -n pgwd --create-namespace -f my-values.yaml</code></pre>
+  <p class="muted">Create <code>my-values.yaml</code> first (e.g. <code>helm show values pgwd/pgwd &gt; my-values.yaml</code>); use <code>helm upgrade --install</code> for repeat installs.</p>
 
   <p class="muted">
     <strong>Full docs:</strong>
-    <a href="https://github.com/hrodrig/pgwd-selfhosted/blob/main/run/kubernetes/helm/pgwd/README.md">Helm chart README</a>
+    <a href="https://github.com/hrodrig/pgwd-selfhosted/blob/main/README.md">pgwd-selfhosted README</a>
     · <strong>Application:</strong>
     <a href="https://github.com/hrodrig/pgwd">hrodrig/pgwd</a>
   </p>

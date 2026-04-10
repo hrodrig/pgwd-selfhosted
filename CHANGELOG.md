@@ -7,6 +7,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Release Charts:** set **`skip_existing: true`** on **chart-releaser** so workflow re-runs do not fail with GitHub **422** (`tag_name` already exists for **`pgwd-<chart-version>`**); **`gh-pages`** and **landing** steps can complete after retries or **`workflow_dispatch`**.
+
 ### Added
 
 - **Helm GitHub Pages landing:** **`run/kubernetes/helm/helm-repo-landing/index.html`** — static page (like **gghstats-selfhosted**) copied to **`gh-pages`** after **chart-releaser** in **Release Charts**; documents **`helm repo add`** for human visitors while **`index.yaml`** remains the Helm client entrypoint.

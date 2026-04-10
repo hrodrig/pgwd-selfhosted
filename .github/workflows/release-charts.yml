@@ -6,6 +6,8 @@
 # “No chart changes detected” and does not update gh-pages.
 # See: https://github.com/helm/chart-releaser-action
 # Repo Settings → Pages: Source = branch gh-pages, folder / (root).
+# skip_existing: re-runs (workflow_dispatch or a re-pushed v* tag) would otherwise hit GitHub 422
+# "tag_name already exists" for pgwd-<chart-version>; skip upload and continue (gh-pages + landing step).
 name: Release Charts
 
 on:
@@ -56,6 +58,7 @@ jobs:
         uses: helm/chart-releaser-action@v1.7.0
         with:
           charts_dir: run/kubernetes/helm
+          skip_existing: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 

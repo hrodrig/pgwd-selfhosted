@@ -1,6 +1,6 @@
 # pgwd-selfhosted
 
-[![Version](https://img.shields.io/badge/version-0.1.5-blue)](https://github.com/hrodrig/pgwd-selfhosted/releases)
+[![Version](https://img.shields.io/badge/version-0.1.6-blue)](https://github.com/hrodrig/pgwd-selfhosted/releases)
 [![Release](https://img.shields.io/github/v/release/hrodrig/pgwd-selfhosted?label=release)](https://github.com/hrodrig/pgwd-selfhosted/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![App image on GHCR](https://img.shields.io/badge/image-ghcr.io%2Fhrodrig%2Fpgwd-2496ED?logo=github)](https://github.com/hrodrig/pgwd/pkgs/container/pgwd)
@@ -181,13 +181,15 @@ See [`values.yaml`](run/kubernetes/helm/pgwd/values.yaml) in-tree for defaults.
 
 **Check:** `kubectl get pods -n pgwd -l app.kubernetes.io/name=pgwd` and **`kubectl logs`** for Postgres stats lines.
 
+**pgwd on a bastion / laptop (not in-cluster):** when **`pgwd`** and **`kubectl`** run on a host that uses **port-forward** to reach many in-cluster Postgres services (e.g. cron or heartbeat), see **[`run/scripts/kubernetes-from-host/README.md`](run/scripts/kubernetes-from-host/README.md)** — example scripts, **`PATH`** (including Snap), sleep between runs, and CLI flags vs **`/etc/pgwd/pgwd.conf`**.
+
 **Remove:**
 
 ```bash
 helm uninstall pgwd -n pgwd
 ```
 
-**More:** [run/kubernetes/helm/pgwd/README.md](run/kubernetes/helm/pgwd/README.md) · [run/kubernetes/manifests](run/kubernetes/manifests/README.md)
+**More:** [run/kubernetes/helm/pgwd/README.md](run/kubernetes/helm/pgwd/README.md) · [run/kubernetes/manifests](run/kubernetes/manifests/README.md) · [run/scripts/kubernetes-from-host](run/scripts/kubernetes-from-host/README.md) (pgwd + kubectl from host)
 
 **[↑ Contents](#table-of-contents)**
 
@@ -208,7 +210,7 @@ Keep **`${PGWD_HOST_DATA}/.env`** in one host directory (e.g. `/home/pgwd/pgwd-d
 ```text
 run/
 ├── common/.env.example          # Shared vars for Compose + image tag
-├── scripts/                     # compose-stack.sh (docker compose helper)
+├── scripts/                     # compose-stack.sh; kubernetes-from-host/ (pgwd + kubectl examples)
 ├── standalone/README.md         # Index; linux, macos, windows, solaris/, bsd/{freebsd,openbsd,netbsd,dragonfly}/
 ├── docker/                      # docker run
 ├── docker-compose/
@@ -226,7 +228,7 @@ run/
 ## Versioning
 
 - **[`VERSION`](VERSION)** — semver of **this repository** (Compose, docs, `run/`, etc.). When you change it, align the **Version** badge in this README and (if you keep a release entry) **CHANGELOG.md**; on **`main`**, tag with **`v<semver>`** (e.g. `v0.2.0`). This number is **not** tied to the Helm chart on every bump.
-- **Helm chart (`run/kubernetes/helm/pgwd/Chart.yaml` → `version:`)** — semver of the **chart package** published to [GitHub Pages](https://hrodrig.github.io/pgwd-selfhosted/index.yaml) / [Releases](https://github.com/hrodrig/pgwd-selfhosted/releases). Bump **`version:`** when the chart itself changes (templates, `values`, etc.). It may **lag** behind **`VERSION`** (e.g. repo `0.2.0`, chart `0.1.5` until you edit the chart). [chart-releaser](https://github.com/helm/chart-releaser) may skip publishing if **`run/kubernetes/helm/`** did not change — expected for docs-only repo releases.
+- **Helm chart (`run/kubernetes/helm/pgwd/Chart.yaml` → `version:`)** — semver of the **chart package** published to [GitHub Pages](https://hrodrig.github.io/pgwd-selfhosted/index.yaml) / [Releases](https://github.com/hrodrig/pgwd-selfhosted/releases). Bump **`version:`** when the chart itself changes (templates, `values`, etc.). It may **lag** behind **`VERSION`** (e.g. repo `0.1.6`, chart `0.1.5` until you edit the chart). [chart-releaser](https://github.com/helm/chart-releaser) may skip publishing if **`run/kubernetes/helm/`** did not change — expected for docs-only repo releases.
 - **`Chart.yaml` → `appVersion`** — **pgwd** application / image line; align with [pgwd releases](https://github.com/hrodrig/pgwd/releases) when you bump the deployed image story.
 - **`PGWD_VERSION`** in **`${PGWD_HOST_DATA}/.env`** (or the env file you pass to Compose) — **container image** tag on GHCR ([pgwd releases](https://github.com/hrodrig/pgwd/releases)), not the same as **`VERSION`**.
 

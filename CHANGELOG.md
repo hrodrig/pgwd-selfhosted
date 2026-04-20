@@ -7,6 +7,12 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-04-20
+
+### Changed
+
+- Bump repository **`VERSION`** to **0.1.6** (README **Version** badge, **`AGENTS.md`**). **Helm `Chart.yaml` `version:`** stays **0.1.5** — **`run/kubernetes/helm/pgwd/`** is unchanged this cycle, so **chart-releaser** does **not** publish a new **`pgwd-*.tgz`** for this repo tag alone (expected for docs / **`run/scripts`**-only work).
+
 ### Fixed
 
 - **GitHub Pages:** ship **`.nojekyll`** on **`gh-pages`** with **`helm-repo-landing`** so the site shows the curated **`index.html`** (like **gghstats-selfhosted**) instead of Jekyll rendering the bootstrap **`README.md`** / repo title alone.
@@ -15,6 +21,7 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 
 - **Helm GitHub Pages landing:** **`run/kubernetes/helm/helm-repo-landing/index.html`** — static page (like **gghstats-selfhosted**) copied to **`gh-pages`** after **chart-releaser** in **Release Charts**; documents **`helm repo add`** for human visitors while **`index.yaml`** remains the Helm client entrypoint.
+- **`run/scripts/kubernetes-from-host/`** — example **bash** scripts (**`pgwd-cron-multi.example.sh`**, **`pgwd-heartbeat-multi.example.sh`**) and README for running **pgwd** with **kubectl port-forward** from a host outside the cluster (bastion / laptop); documents **`PATH`** (including Snap), sleep between runs, CLI flags vs **`/etc/pgwd/pgwd.conf`**, and Loki **`-notifications-loki-org-id`**. Cross-links from root **README**, **`run/README.md`**, and **`run/scripts/README.md`**.
 
 ## [0.1.5] - 2026-04-09
 
@@ -85,7 +92,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 The **0.1.0** Compose bullet above described **Traefik**, a bundled observability stack, and **Prometheus** scrape examples. Those paths were **removed** later on **`develop`**. The current tree is **minimal Compose** only; see [`run/docker-compose/README.md`](run/docker-compose/README.md) and **pgwd `v0.5.10`** alignment in the root README.
 
-[Unreleased]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.6
 [0.1.5]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.5
 [0.1.2]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.2
 [0.1.1]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.1

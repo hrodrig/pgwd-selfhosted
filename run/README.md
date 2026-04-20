@@ -24,6 +24,7 @@ Pass any Compose subcommand (`up`, `down`, `restart`, `logs`, `ps`, `pull`, …)
 | [`docker-compose/minimal/`](docker-compose/minimal/) | **One Compose service** — quick test or small VPS. |
 | [`kubernetes/helm/pgwd/`](kubernetes/helm/pgwd/) | **Helm** chart — **only** here (not shipped under **[pgwd](https://github.com/hrodrig/pgwd)** **`main`**). Install from a **clone**; **[`README`](kubernetes/helm/pgwd/README.md)**. **Helm repo** on [GitHub Pages](https://hrodrig.github.io/pgwd-selfhosted) with the **first chart release**. |
 | [`kubernetes/manifests/`](kubernetes/manifests/) | Raw manifests — optional; see folder README. |
+| [`scripts/kubernetes-from-host/`](scripts/kubernetes-from-host/README.md) | **Optional:** example **`pgwd`** + **`kubectl`** scripts from a bastion or VPS (not required for in-cluster Helm). |
 
 **Batch test many VPS (Ansible):** after Docker is installed on each machine, use **[`testing/platforms/README.md`](../testing/platforms/README.md)** and **`make test-compose-platforms`** from the repository root (clone + **`.env`** + **minimal** stack **up** / log-based check / **down**).
 

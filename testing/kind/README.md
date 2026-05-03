@@ -7,7 +7,7 @@ The manifest **`postgres-minimal.yaml`** deploys Postgres in **`default`** with 
 | Make target | What it does |
 |-------------|----------------|
 | **`make test-kind-postgres`** | kind cluster + **`postgres-minimal`** only |
-| **`make test-helm-kind`** | Same Postgres + **`helm upgrade --install`** pgwd (README-style **`PGWD_DRY_RUN`**) + rollout + **log check** for Postgres stats (**v0.5.10** image). |
+| **`make test-helm-kind`** | Same Postgres + **`helm upgrade --install`** pgwd (README-style **`PGWD_DRY_RUN`**) + rollout + **log check** for Postgres stats (chart default image tag, e.g. **v0.6.4**). |
 
 ```bash
 make test-kind-postgres   # Postgres only

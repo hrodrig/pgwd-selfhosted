@@ -4,7 +4,7 @@
 
 **Shortcut:** [`run/scripts/compose-stack.sh`](../../scripts/compose-stack.sh) — e.g. **`./run/scripts/compose-stack.sh minimal up -d`** (same `--env-file` / `-f` as below).
 
-Single **pgwd** service using the **GHCR** image. Default **`PGWD_VERSION=v0.5.10`**: env-driven Postgres monitoring and optional Slack/Loki; use **`docker logs`** for output.
+Single **pgwd** service using the **GHCR** image. Default **`PGWD_VERSION=v0.6.4`**: env-driven Postgres monitoring and optional Slack/Loki; use **`docker logs`** for output. Optional **SQLite**, **`PGWD_HTTP_LISTEN`**, and published **ports** — see **[`docker-compose.yml`](docker-compose.yml)** comments and **[`run/common/.env.example`](../../common/.env.example)**.
 
 Use **`${PGWD_HOST_DATA}/.env`** so secrets and **`PGWD_DB_URL`** stay outside the git clone (recommended on servers). **`PGWD_HOST_DATA`** is **not** bind-mounted into the container for this layout.
 

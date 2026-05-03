@@ -14,6 +14,7 @@ Use these **example scripts** when **pgwd** runs on a bastion, laptop, or VPS wi
 | **`-notifications-loki-org-id`** | Renamed flag (not legacy `-loki-org-id`). Must match Grafana **X-Scope-OrgId** when Loki is multi-tenant. |
 | **`127.0.0.1` + `-kube-local-port` in `-db-url`** | Matches port-forward binding on the host; **`?sslmode=disable`** avoids TLS mismatch over the tunnel. |
 | **Dangling `kubectl port-forward`** | If a local port is **already in use**, check **`ss -ltnp \| grep <port>`** and stop the old **`kubectl`** PID. |
+| **Multi-database YAML vs port-forward** | Upstream pgwd **rejects `databases:` + `-kube-postgres` together**. These scripts run **one URL + one kube target per invocation** (or separate processes). For several DBs inside the cluster with **direct** URLs, use **`databases:`** only (no kube stanza). See **[Multi-database limitations](https://github.com/hrodrig/pgwd/blob/main/README.md#multi-database-limitations)**. |
 
 ## Environment variables (copy / export)
 

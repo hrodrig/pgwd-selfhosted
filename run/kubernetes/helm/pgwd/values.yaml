@@ -5,7 +5,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/hrodrig/pgwd
-  tag: "v0.5.10"
+  tag: "v0.6.4"
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -62,7 +62,12 @@ config:
   #   threshold:
   #     levels: "75,85,95"
   # Schema: pgwd file YAML (see hrodrig/pgwd internal/config/file.go and contrib/pgwd.conf.example).
-  # Unknown keys are ignored at parse time — do not use log_level / confirm_* here; those are not file fields.
+  # Multi-database: if you use databases: with several URLs, do not combine with kube.postgres in the same
+  # config; use direct in-cluster URLs. SQLite history keys (client, cluster, database) omit URL host — use
+  # unique client per databases: entry when the same DB name is on different hosts. See pgwd README
+  # https://github.com/hrodrig/pgwd/blob/main/README.md#multi-database-limitations
+  # Supported YAML keys include log_level, confirm_alert, confirm_ok, sqlite, http (see upstream file.go). CSV export is CLI-only.
+  # See hrodrig/pgwd internal/config/file.go and contrib/pgwd.conf.example.
   extra: |
     client: "pgwd-k8s"
     interval: 60
@@ -82,6 +87,11 @@ env:
   PGWD_CLIENT: "pgwd-k8s"
   PGWD_INTERVAL: "60"
   PGWD_LOG_LEVEL: "info"
+  # Optional (pgwd 0.6+): writable path + listen address — add a volumeMount if you set SQLITE_PATH.
+  # PGWD_SQLITE_PATH: "/var/lib/pgwd/metrics.db"
+  # PGWD_HTTP_LISTEN: ":8080"
+  # PGWD_CONFIRM_ALERT: "1"
+  # PGWD_CONFIRM_OK: "1"
   # PGWD_NOTIFICATIONS_SLACK_WEBHOOK: from secrets
   # PGWD_NOTIFICATIONS_LOKI_URL: from secrets
 
@@ -95,3 +105,40 @@ secrets:
   # Use existingSecret to reference an existing secret (keys: url, slack-webhook, loki-url)
   # When set, we use this instead of creating; no secret is created.
   existingSecret: ""
+
+# HTTP server (pgwd 0.6+): /healthz and Prometheus /metrics under base path. When config.enabled=true,
+# set the same listen/paths in config.extra (http: block) — this chart does not inject PGWD_HTTP_* env in that mode.
+http:
+  enabled: true
+  listen: ":8080"
+  containerPort: 8080
+  basePath: "/api/pgwd/v1"
+  healthPath: "/healthz"
+  metricsPath: "/metrics"
+  # Full path for probes; empty = basePath + "/" + healthPath (must match pgwd config).
+  probePath: ""
+  probes:
+    enabled: true
+    initialDelaySeconds: 5
+    readinessInitialDelaySeconds: 3
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 3
+
+# Service exposes containerPort when http.enabled. Add annotations for Prometheus Operator / scrape configs.
+service:
+  enabled: true
+  type: ClusterIP
+  port: 8080
+  annotations: {}
+
+# Persistent SQLite metrics store (ReadWriteOnce). Use replicaCount: 1 only. When config.enabled=true,
+# set sqlite.path in config.extra to mountPath/sqliteFile (or your path under mountPath).
+persistence:
+  enabled: false
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  mountPath: /var/lib/pgwd
+  sqliteFile: metrics.db
+  subPath: ""

@@ -8,7 +8,7 @@ x-logging: &default-logging
 services:
   pgwd:
     # Full ref overrides PGWD_VERSION+GHCR (private registry, dev tags): set PGWD_IMAGE in .env.
-    image: ${PGWD_IMAGE:-ghcr.io/hrodrig/pgwd:${PGWD_VERSION:-v0.5.10}}
+    image: ${PGWD_IMAGE:-ghcr.io/hrodrig/pgwd:${PGWD_VERSION:-v0.6.4}}
     container_name: pgwd
     restart: unless-stopped
     environment:
@@ -20,4 +20,12 @@ services:
       - PGWD_DRY_RUN=${PGWD_DRY_RUN:-true}
       - PGWD_NOTIFICATIONS_SLACK_WEBHOOK=${PGWD_NOTIFICATIONS_SLACK_WEBHOOK:-}
       - PGWD_NOTIFICATIONS_LOKI_URL=${PGWD_NOTIFICATIONS_LOKI_URL:-}
+      # Optional (pgwd 0.6+): uncomment in .env — SQLite history / hysteresis / resolution; HTTP /healthz + Prometheus /metrics
+      # - PGWD_SQLITE_PATH=${PGWD_SQLITE_PATH:-}
+      # - PGWD_HTTP_LISTEN=${PGWD_HTTP_LISTEN:-}
+    # Optional: publish metrics/probes — set PGWD_HOST_PORT in .env (e.g. 8080) and PGWD_HTTP_LISTEN=:8080
+    # ports:
+    #   - "${PGWD_HOST_PORT:-8080}:8080"
+    # volumes:
+    #   - "${PGWD_HOST_DATA:?}/pgwd-data:/var/lib/pgwd"
     logging: *default-logging

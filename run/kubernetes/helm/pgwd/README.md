@@ -2,7 +2,9 @@
 
 ← [Back to run/README](../../../README.md).
 
-This chart installs **[pgwd](https://github.com/hrodrig/pgwd)** (Postgres Watch Dog) from the published container image — monitor PostgreSQL connection counts and notify via Slack/Loki.
+This chart installs **[pgwd](https://github.com/hrodrig/pgwd)** (Postgres Watch Dog) from the published container image — monitor PostgreSQL connections and notify via Slack/Loki. **pgwd 0.6+** can use **SQLite** for check history (hysteresis, resolution alerts), expose **`/healthz`** and Prometheus **`/metrics`** over HTTP, and use **`databases:`** for multiple direct URLs — configure via **`config.extra`** or **`env`** (see upstream [README](https://github.com/hrodrig/pgwd/blob/main/README.md)).
+
+By default the chart creates a **ClusterIP Service** (`service.enabled`, `http.enabled`) on port **8080** and **HTTP probes** on **`/api/pgwd/v1/healthz`**. Set **`service.annotations`** for Prometheus scrape hints (or use a **ServiceMonitor** from your stack). Optional **`persistence.enabled`** provisions a **PVC** (ReadWriteOnce) for SQLite at **`persistence.mountPath`** — keep **`replicaCount: 1`**. With **`config.enabled: true`**, define matching **`http:`** and **`sqlite.path`** in **`config.extra`** (the chart does not inject **`PGWD_HTTP_*`** / **`PGWD_SQLITE_PATH`** in that mode).
 
 **Path vs repository name:** In a clone of **[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**, this chart lives under **`run/kubernetes/helm/pgwd/`**. The segment **`pgwd`** is the **Helm chart name** (matches **`name:`** in **`Chart.yaml`**) and the workload it deploys — not the GitHub repository name (**`pgwd-selfhosted`**). This mirrors **[gghstats-selfhosted](https://github.com/hrodrig/gghstats-selfhosted)** / **`run/kubernetes/helm/gghstats`**.
 
@@ -32,7 +34,7 @@ helm show values ./run/kubernetes/helm/pgwd > my-values.yaml
 helm show values pgwd/pgwd --version <chart-version> > my-values.yaml
 ```
 
-This repo (**[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**) is the **source of truth** for the chart; a **packaged Helm repo** on GitHub Pages is **planned** (not required to install today). The **container image** is **`ghcr.io/hrodrig/pgwd`** from [pgwd releases](https://github.com/hrodrig/pgwd/releases). **Registry tags use the same form as Git tags** (e.g. **`v0.5.10`**); a tag like **`0.5.10`** (no `v`) will **not** resolve on GHCR. Set **`image.tag`** in values to the published tag you want.
+This repo (**[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**) is the **source of truth** for the chart; a **packaged Helm repo** on GitHub Pages is **planned** (not required to install today). The **container image** is **`ghcr.io/hrodrig/pgwd`** from [pgwd releases](https://github.com/hrodrig/pgwd/releases). **Registry tags use the same form as Git tags** (e.g. **`v0.6.4`**); a tag like **`0.6.0`** (no `v`) will **not** resolve on GHCR. Set **`image.tag`** in values to the published tag you want.
 
 ### Secrets
 
@@ -72,7 +74,7 @@ exec /home/pgwd/pgwd
 "
 ```
 
-Example **Slack** message (**pgwd** `v0.5.10`, test notification / delivery check):
+Example **Slack** message (**pgwd** `v0.6.4`, test notification / delivery check):
 
 ![Slack incoming webhook: pgwd force-notification test](../../../../assets/pgwd-slack-force-notification.png)
 
@@ -97,14 +99,14 @@ For production, use **`--set-file`** or a values file instead of passing secrets
 
 ### From Helm repository (GitHub Pages, after first chart release)
 
-When **[release-charts](https://github.com/hrodrig/pgwd-selfhosted/blob/develop/.github/workflows/release-charts.yml)** has published **`index.yaml`** and chart **`*.tgz`** artifacts, install from the repo using the **`version:`** in **`Chart.yaml`** (e.g. **`0.1.5`** — chart semver, not the pgwd app release):
+When **[release-charts](https://github.com/hrodrig/pgwd-selfhosted/blob/develop/.github/workflows/release-charts.yml)** has published **`index.yaml`** and chart **`*.tgz`** artifacts, install from the repo using the **`version:`** in **`Chart.yaml`** (e.g. **`0.1.8`** — chart semver, not the pgwd app release):
 
 ```bash
 helm repo add pgwd https://hrodrig.github.io/pgwd-selfhosted
 helm repo update
-helm show values pgwd/pgwd --version 0.1.5 > my-values.yaml
+helm show values pgwd/pgwd --version 0.1.8 > my-values.yaml
 # Edit my-values.yaml for your environment.
-helm upgrade --install pgwd pgwd/pgwd --version 0.1.5 -n pgwd --create-namespace -f my-values.yaml
+helm upgrade --install pgwd pgwd/pgwd --version 0.1.8 -n pgwd --create-namespace -f my-values.yaml
 ```
 
 If **`helm repo add`** or **`helm search`** fails, **`index.yaml`** may not be live yet — use **From this repository** above. Confirm versions with **`helm search repo pgwd -l`** once the index exists.
@@ -134,6 +136,14 @@ env:
 Set `config.enabled: true` and provide full YAML in `config.extra` using the pgwd file schema (for example `db:` for the Postgres URL and thresholds, `notifications:` for Slack/Loki). Match field names and structure to the **pgwd image tag** you run (see **`internal/config/file.go`** / **`contrib/pgwd.conf.example`** upstream). Example overlay: **[`values-config-mode.yaml`](values-config-mode.yaml)** (`helm upgrade … -f values-config-mode.yaml`).
 
 **Note:** When using a config file, env vars are ignored by pgwd.
+
+### Config file + persistence (PVC)
+
+When **`config.enabled`** and **`persistence.enabled`** are both **`true`**, pgwd loads **`PGWD_CONFIG`** (e.g. `/etc/pgwd/pgwd.conf` from the chart ConfigMap). In that path, upstream pgwd applies **`config.FromFile`**: if the file exists and parses, **`PGWD_*` environment variables are not applied** — the YAML file is the single source of truth (see **`FromFile`** in [internal/config/file.go](https://github.com/hrodrig/pgwd/blob/main/internal/config/file.go) and **`loadAndParseConfig`** in [cmd/pgwd/main.go](https://github.com/hrodrig/pgwd/blob/main/cmd/pgwd/main.go)). So **`PGWD_SQLITE_PATH` would not override `sqlite.path`** even if the Deployment set it; the chart does not inject **`PGWD_SQLITE_PATH`** in config mode for that reason.
+
+Set **`sqlite.path`** inside **`config.extra`** to an absolute path **on the writable volume**, typically under **`persistence.mountPath`**, e.g. **`/var/lib/pgwd/metrics.db`** when **`mountPath`** is **`/var/lib/pgwd`** and **`sqliteFile`** is **`metrics.db`**. If you use **`persistence.subPath`**, **`sqlite.path`** must still resolve to a file visible at the container mount (under that mount point). Pointing **`sqlite.path`** at ephemeral paths (e.g. under **`/tmp`**) defeats persistence across pod restarts.
+
+**Multi-database (`databases:` in `config.extra`):** The same rules apply as in upstream pgwd: **`databases:`** is for **direct** Postgres URLs only — **not** together with **`kube.postgres`** / **`-kube-postgres`** in that process. Persisted metrics and hysteresis key rows by **`(client, cluster, database)`** (hostname from the URL is **not** part of the key); set a **distinct `client` per `databases:` entry** when several hosts use the same database name. See **[Multi-database limitations](https://github.com/hrodrig/pgwd/blob/main/README.md#multi-database-limitations)**.
 
 ```yaml
 # values.yaml
@@ -166,7 +176,7 @@ This table lists the main knobs; the full key set (**`resources.limits`**, **`af
 |-----------|-------------|---------|
 | `replicaCount` | Number of replicas | `1` |
 | `image.repository` | Image repository | `ghcr.io/hrodrig/pgwd` |
-| `image.tag` | Image tag (must match ghcr, e.g. `v0.5.10`) | `v0.5.10` |
+| `image.tag` | Image tag (must match ghcr, e.g. `v0.6.4`) | `v0.6.4` |
 | `secrets.create` | Create Secret from values | `true` |
 | `secrets.dbUrl` | Postgres connection URL | `""` |
 | `secrets.slackWebhook` | Slack webhook URL | `""` |
@@ -175,6 +185,16 @@ This table lists the main knobs; the full key set (**`resources.limits`**, **`af
 | `config.enabled` | Use config file instead of env | `false` |
 | `config.extra` | Full pgwd YAML config | See values.yaml |
 | `env.PGWD_LOG_LEVEL` | Log level: `info` or `debug` (debug = verbose dry-run stats) | `info` |
+| `http.enabled` | Expose HTTP server; set `PGWD_HTTP_LISTEN` when `config.enabled=false` | `true` |
+| `http.listen` / `containerPort` | Listen address and container port (must align) | `":8080"` / `8080` |
+| `http.basePath` / `healthPath` | With `metricsPath`, must match pgwd config and probes | defaults match upstream |
+| `http.probes` | Liveness/readiness HTTP GET on health path | enabled |
+| `service.enabled` | Create `Service` for probes and Prometheus scrape | `true` (with `http.enabled`) |
+| `service.type` / `service.port` | Service type and port | `ClusterIP` / `8080` |
+| `service.annotations` | e.g. `prometheus.io/scrape` | `{}` |
+| `persistence.enabled` | Create PVC and mount for SQLite (`replicaCount: 1`) | `false` |
+| `persistence.size` / `storageClass` / `accessMode` | PVC spec | `1Gi` / `""` / `ReadWriteOnce` |
+| `persistence.mountPath` / `sqliteFile` | Mount path and filename; env `PGWD_SQLITE_PATH` when env mode | `/var/lib/pgwd` / `metrics.db` |
 | `resources.requests` | CPU/memory requests | `10m/32Mi` |
 
 ## Uninstall

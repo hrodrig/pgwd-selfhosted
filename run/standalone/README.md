@@ -12,11 +12,11 @@ Install from **[pgwd Releases](https://github.com/hrodrig/pgwd/releases)** (tarb
 | **\*BSD** (FreeBSD, OpenBSD, NetBSD, DragonFly) | [bsd/README.md](bsd/README.md) |
 | **Solaris / illumos** | [solaris/README.md](solaris/README.md) |
 
-## Align with this repo’s default (`v0.5.10`)
+## Align with this repo’s default (`v0.6.4`)
 
-**Self-hosted paths in this repository** target the published **GHCR** image and release **`v0.5.10`**: **`PGWD_DB_URL`**, optional **Slack/Loki**, and **logs** for operational checks.
+**Self-hosted paths in this repository** default to the published **GHCR** image **`v0.6.4`**: **`PGWD_DB_URL`**, optional **Slack/Loki**, and **logs** for operational checks. **SQLite, `/metrics`, multi-DB YAML** — **[pgwd README](https://github.com/hrodrig/pgwd/blob/main/README.md)**.
 
-If you only run **`v0.5.10`**, use the minimal env block in the root **[README](../../README.md)** (**Standalone binary**). **`-config`** follows **[contrib/pgwd.conf.example](https://github.com/hrodrig/pgwd/blob/main/contrib/pgwd.conf.example)** (`client`, `db`, `notifications`, `kube`, …). Anything outside that file (extra env, flags, other releases) — **[pgwd README](https://github.com/hrodrig/pgwd/blob/main/README.md)** for your tag.
+Use the minimal env block in the root **[README](../../README.md)** (**Standalone binary**) or **`-config`** per **[contrib/pgwd.conf.example](https://github.com/hrodrig/pgwd/blob/main/contrib/pgwd.conf.example)** (`client`, `db`, `databases`, `sqlite`, `http`, `notifications`, `kube`, …). Anything outside that file — **[pgwd README](https://github.com/hrodrig/pgwd/blob/main/README.md)** for your tag.
 
 ## CPU architectures (release binaries)
 
@@ -30,7 +30,7 @@ Release assets are built from **[`.goreleaser.yaml`](https://github.com/hrodrig/
 
 Asset names look like **`pgwd_<tag>_<goos>_<goarch>.tar.gz`** (e.g. **`…_linux_riscv64.tar.gz`**, **`…_freebsd_arm64.tar.gz`**). Pick the file that matches your machine.
 
-**Recommended:** keep state **outside** the download folder (same idea as Compose **`PGWD_HOST_DATA`**, e.g. `/home/pgwd/pgwd-data`). Use **`PGWD_DB_URL`** (and optional notifiers) for **`v0.5.10`**. Full YAML config follows **[contrib/pgwd.conf.example](https://github.com/hrodrig/pgwd/blob/main/contrib/pgwd.conf.example)**; other behavior — **[upstream README](https://github.com/hrodrig/pgwd/blob/main/README.md)**.
+**Recommended:** keep state **outside** the download folder (same idea as Compose **`PGWD_HOST_DATA`**, e.g. `/home/pgwd/pgwd-data`). Use **`PGWD_DB_URL`** (and optional notifiers) for the minimal path. Full YAML config follows **[contrib/pgwd.conf.example](https://github.com/hrodrig/pgwd/blob/main/contrib/pgwd.conf.example)**; other behavior — **[upstream README](https://github.com/hrodrig/pgwd/blob/main/README.md)**.
 
 ## Cron / one-shot (no daemon)
 

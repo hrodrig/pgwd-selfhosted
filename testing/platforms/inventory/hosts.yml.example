@@ -13,11 +13,11 @@ all:
     pgwd_compose_repo_dest: /opt/pgwd-selfhosted
 
     # Image tag for ghcr.io/hrodrig/pgwd when PGWD_IMAGE is unset (see docker-compose image line).
-    pgwd_image_version: v0.5.10
+    pgwd_image_version: v0.6.4
     # Optional: full OCI reference (private registry / dev build). When set, overrides registry+tag.
     # pgwd_image: hcr.example.com/library/pgwd:v0.5.11-dev
 
-    # Unused by minimal v0.5.10 (no host port). Kept for env template / future use.
+    # Optional host port if you extend compose to publish HTTP /metrics (minimal example has no ports by default).
     pgwd_host_port: 8080
 
     # Python mock for Slack + Loki on each VPS (same idea as pgwd test-platforms).
@@ -31,7 +31,7 @@ all:
     # Set false when pgwd_notifications_* are set and you want real alerts from the daemon.
     # pgwd_dry_run: true
 
-    # Directory on the VM: holds generated .env (minimal v0.5.10: no pgwd bind mount).
+    # Directory on the VM: holds generated .env (optional SQLite mount if you configure PGWD_SQLITE_PATH + volumes).
     pgwd_host_data: /var/lib/pgwd-compose
     # Optional: must match the pgwd process UID/GID inside the image (default 1000:1000 for official Alpine image).
     # pgwd_container_uid: "1000"

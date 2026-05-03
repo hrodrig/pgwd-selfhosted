@@ -52,7 +52,20 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Image
 */}}
 {{- define "pgwd.image" -}}
-{{- /* GHCR tags are v-prefixed (v0.5.10); keep image.tag and Chart appVersion in sync when bumping. */ -}}
+{{- /* GHCR tags are v-prefixed (e.g. v0.6.4); keep image.tag and Chart appVersion in sync when bumping. */ -}}
 {{- $tag := .Values.image.tag | default .Chart.AppVersion }}
 {{- printf "%s:%s" .Values.image.repository $tag }}
+{{- end }}
+
+{{/*
+HTTP health probe path (must match pgwd config: HTTPBasePath + HTTPHealthPath).
+*/}}
+{{- define "pgwd.healthPath" -}}
+{{- if .Values.http.probePath }}
+{{- .Values.http.probePath }}
+{{- else }}
+{{- $base := trimSuffix "/" .Values.http.basePath }}
+{{- $h := trimPrefix "/" .Values.http.healthPath }}
+{{- printf "%s/%s" $base $h }}
+{{- end }}
 {{- end }}

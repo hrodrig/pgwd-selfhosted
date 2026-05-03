@@ -7,6 +7,23 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-05-03
+
+### Added
+
+- **Helm chart `pgwd`:** optional **`persistence`** — **`PersistentVolumeClaim`** (`templates/pvc.yaml`) and **`Deployment`** volume mount; **`PGWD_SQLITE_PATH`** set to **`mountPath`/`sqliteFile`** when **`config.enabled`** is false. **`ClusterIP` `Service`** (`templates/service.yaml`) when **`service.enabled`** and **`http.enabled`** (probes target **`http`** port).
+
+### Changed
+
+- **Helm chart `pgwd`:** **`Chart.yaml`** **`version:`** **0.1.8**, **`appVersion`** **`v0.6.4`**, default **`image.tag`** **`v0.6.4`** — aligned with **[pgwd v0.6.4](https://github.com/hrodrig/pgwd/releases)** on GHCR. (Chart **0.1.7** previously defaulted **`v0.6.0`**.)
+- **Compose / Ansible / docs:** Minimal **`docker-compose.yml`**, **`run/common/.env.example`**, **`testing/platforms`** defaults, and README examples use **`v0.6.4`** as the documented application image tag.
+- **`values.schema.json`:** when **`persistence.enabled`**, **`replicaCount`** must be **1** (PVC default **ReadWriteOnce**).
+
+### Documentation
+
+- **Multi-database (pgwd):** Cross-link **[Multi-database limitations](https://github.com/hrodrig/pgwd/blob/main/README.md#multi-database-limitations)** from root **README**, Helm **`run/kubernetes/helm/pgwd/`** (`README.md`, **`values.yaml`** / **`values-config-mode.yaml`** comments), **`run/scripts/kubernetes-from-host/README.md`**, and **`AGENTS.md`**.
+- **Helm `README.md`:** **Config file + persistence (PVC)** — **`sqlite.path`** in **`config.extra`**, **`FromFile`** vs **`PGWD_*`**, and **`subPath`** / ephemeral paths.
+
 ## [0.1.6] - 2026-04-20
 
 ### Changed
@@ -90,9 +107,10 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Note
 
-The **0.1.0** Compose bullet above described **Traefik**, a bundled observability stack, and **Prometheus** scrape examples. Those paths were **removed** later on **`develop`**. The current tree is **minimal Compose** only; see [`run/docker-compose/README.md`](run/docker-compose/README.md) and **pgwd `v0.5.10`** alignment in the root README.
+The **0.1.0** Compose bullet above described **Traefik**, a bundled observability stack, and **Prometheus** scrape examples. Those paths were **removed** later on **`develop`**. The current tree is **minimal Compose** only (no bundled observability stack); **pgwd 0.6+** can expose **`/metrics`** for your own Prometheus — see [`run/docker-compose/README.md`](run/docker-compose/README.md) and the root README.
 
 [Unreleased]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.6...HEAD
+[0.1.8]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.6...v0.1.8
 [0.1.6]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.6
 [0.1.5]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.5
 [0.1.2]: https://github.com/hrodrig/pgwd-selfhosted/releases/tag/v0.1.2

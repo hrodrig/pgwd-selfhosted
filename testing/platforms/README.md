@@ -75,9 +75,9 @@ Copy **`inventory/hosts.yml.example`** to **`inventory/hosts.yml`** (the latter 
 
 - **`ansible_host`**, **`ansible_port`**, **`ansible_user`** (often `root`)
 - **`pgwd_db_url`** — Postgres URL for the container (`PGWD_DB_URL`)
-- **`pgwd_host_data`** — host directory for **`.env`** (e.g. `/var/lib/pgwd-compose`). Minimal **`v0.5.10`** does not bind-mount it into pgwd; ownership (**`pgwd_container_uid` / `pgwd_container_gid`**, default **1000:1000**) matches the container user for consistency and for stacks that do mount data. Override if your image runs as another UID (check with `docker run --rm --entrypoint id <image>`).
+- **`pgwd_host_data`** — host directory for **`.env`** (e.g. `/var/lib/pgwd-compose`). The **minimal** Compose example does not bind-mount it unless you add a volume (e.g. for SQLite); ownership (**`pgwd_container_uid` / `pgwd_container_gid`**, default **1000:1000**) matches the container user. Override if your image runs as another UID (check with `docker run --rm --entrypoint id <image>`).
 
-Optional: **`pgwd_compose_repo_version`** (branch/tag, default `develop`), **`pgwd_image_version`** (image tag, default `v0.5.10`), **`pgwd_host_port`** (written into **`.env`** for template parity; **minimal** `v0.5.10` does not map a host port, so **pgwd** does not use it), **`notification_mock_port`** (default **9999**), **`pgwd_compose_docker_host_fallback`** if `docker inspect` does not report a gateway. Set **`pgwd_compose_show_mock_captures`** to **`false`** to skip printing the Loki/Slack JSON bodies captured by the mock (default **true**).
+Optional: **`pgwd_compose_repo_version`** (branch/tag, default `develop`), **`pgwd_image_version`** (image tag, default `v0.6.4`), **`pgwd_host_port`** (written into **`.env`** for template parity; **minimal** compose does not publish a port unless you extend it), **`notification_mock_port`** (default **9999**), **`pgwd_compose_docker_host_fallback`** if `docker inspect` does not report a gateway. Set **`pgwd_compose_show_mock_captures`** to **`false`** to skip printing the Loki/Slack JSON bodies captured by the mock (default **true**).
 
 The **`.env`** template may leave Slack/Loki empty; the notification test passes URLs on the **`docker exec`** command line (no shared notifications VPS).
 

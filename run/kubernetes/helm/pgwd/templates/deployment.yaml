@@ -72,19 +72,67 @@ spec:
               value: {{ $val | quote }}
               {{- end }}
             {{- end }}
-          {{- if .Values.config.enabled }}
+            {{- if and .Values.http.enabled (not .Values.config.enabled) }}
+            - name: PGWD_HTTP_LISTEN
+              value: {{ .Values.http.listen | quote }}
+            {{- end }}
+            {{- if and .Values.persistence.enabled (not .Values.config.enabled) }}
+            - name: PGWD_SQLITE_PATH
+              value: {{ printf "%s/%s" .Values.persistence.mountPath .Values.persistence.sqliteFile | quote }}
+            {{- end }}
+          {{- if .Values.http.enabled }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.http.containerPort }}
+              protocol: TCP
+          {{- if .Values.http.probes.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ include "pgwd.healthPath" . | quote }}
+              port: http
+            initialDelaySeconds: {{ .Values.http.probes.initialDelaySeconds }}
+            periodSeconds: {{ .Values.http.probes.periodSeconds }}
+            timeoutSeconds: {{ .Values.http.probes.timeoutSeconds }}
+            failureThreshold: {{ .Values.http.probes.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: {{ include "pgwd.healthPath" . | quote }}
+              port: http
+            initialDelaySeconds: {{ .Values.http.probes.readinessInitialDelaySeconds }}
+            periodSeconds: {{ .Values.http.probes.periodSeconds }}
+            timeoutSeconds: {{ .Values.http.probes.timeoutSeconds }}
+            failureThreshold: {{ .Values.http.probes.failureThreshold }}
+          {{- end }}
+          {{- end }}
+          {{- if or .Values.config.enabled .Values.persistence.enabled }}
           volumeMounts:
+            {{- if .Values.config.enabled }}
             - name: config
               mountPath: /etc/pgwd
               readOnly: true
+            {{- end }}
+            {{- if .Values.persistence.enabled }}
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath | quote }}
+              {{- if .Values.persistence.subPath }}
+              subPath: {{ .Values.persistence.subPath | quote }}
+              {{- end }}
+            {{- end }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- if .Values.config.enabled }}
+      {{- if or .Values.config.enabled .Values.persistence.enabled }}
       volumes:
+        {{- if .Values.config.enabled }}
         - name: config
           configMap:
             name: {{ include "pgwd.fullname" . }}-config
+        {{- end }}
+        {{- if .Values.persistence.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "pgwd.fullname" . }}
+        {{- end }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

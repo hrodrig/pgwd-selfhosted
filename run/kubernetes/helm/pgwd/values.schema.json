@@ -6,7 +6,10 @@
     "image",
     "serviceAccount",
     "config",
-    "secrets"
+    "secrets",
+    "http",
+    "service",
+    "persistence"
   ],
   "additionalProperties": false,
   "properties": {
@@ -117,6 +120,82 @@
         "lokiUrl": { "type": "string" },
         "existingSecret": { "type": "string" }
       }
+    },
+    "http": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "listen",
+        "containerPort",
+        "basePath",
+        "healthPath",
+        "metricsPath",
+        "probePath",
+        "probes"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "listen": { "type": "string", "minLength": 1 },
+        "containerPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "basePath": { "type": "string" },
+        "healthPath": { "type": "string" },
+        "metricsPath": { "type": "string" },
+        "probePath": { "type": "string" },
+        "probes": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "initialDelaySeconds",
+            "readinessInitialDelaySeconds",
+            "periodSeconds",
+            "timeoutSeconds",
+            "failureThreshold"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "initialDelaySeconds": { "type": "integer", "minimum": 0 },
+            "readinessInitialDelaySeconds": { "type": "integer", "minimum": 0 },
+            "periodSeconds": { "type": "integer", "minimum": 1 },
+            "timeoutSeconds": { "type": "integer", "minimum": 1 },
+            "failureThreshold": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "service": {
+      "type": "object",
+      "required": ["enabled", "type", "port", "annotations"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "type": { "type": "string", "minLength": 1 },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "annotations": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "persistence": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "storageClass",
+        "accessMode",
+        "size",
+        "mountPath",
+        "sqliteFile",
+        "subPath"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "storageClass": { "type": "string" },
+        "accessMode": { "type": "string", "minLength": 1 },
+        "size": { "type": "string", "minLength": 1 },
+        "mountPath": { "type": "string", "minLength": 1 },
+        "sqliteFile": { "type": "string", "minLength": 1 },
+        "subPath": { "type": "string" }
+      }
     }
   },
   "allOf": [
@@ -138,6 +217,23 @@
             }
           }
         }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "persistence": {
+            "properties": { "enabled": { "const": true } },
+            "required": ["enabled"]
+          }
+        },
+        "required": ["persistence"]
+      },
+      "then": {
+        "properties": {
+          "replicaCount": { "type": "integer", "minimum": 1, "maximum": 1 }
+        },
+        "required": ["replicaCount"]
       }
     }
   ]

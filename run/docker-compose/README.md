@@ -10,7 +10,7 @@ Compose files live under this directory; run **`docker compose` from the reposit
 
 | Layout | Use when | README |
 |--------|----------|--------|
-| **Minimal** | Single **pgwd** container (defaults **`v0.5.10`**), quick VPS or lab | [`minimal/README.md`](minimal/README.md) |
+| **Minimal** | Single **pgwd** container (defaults **`v0.6.4`**), quick VPS or lab | [`minimal/README.md`](minimal/README.md) |
 
 **Data outside the clone:** set **`PGWD_HOST_DATA`** and keep **`${PGWD_HOST_DATA}/.env`** there.
 

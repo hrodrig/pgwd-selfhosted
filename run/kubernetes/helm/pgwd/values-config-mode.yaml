@@ -1,6 +1,7 @@
 # Example values for config-file mode (pgwd YAML in config.extra).
 # Schema: hrodrig/pgwd internal/config/file.go and contrib/pgwd.conf.example.
-# Do not use log_level / confirm_* here — they are not file fields (silently ignored by the parser).
+# Multi-database (databases:): see https://github.com/hrodrig/pgwd/blob/main/README.md#multi-database-limitations
+# log_level, confirm_alert, confirm_ok, sqlite, http are valid YAML fields (pgwd internal/config/file.go).
 config:
   enabled: true
   extra: |
@@ -17,6 +18,15 @@ config:
         webhook: "https://hooks.slack.com/services/..."
       loki:
         url: "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+    http:
+      listen: ":8080"
+      base_path: "/api/pgwd/v1"
+      healthz_path: "/healthz"
+      metrics_path: "/metrics"
+    # When using Helm persistence.enabled, set sqlite.path to the writable file under the mount
+    # (defaults: mountPath /var/lib/pgwd, sqliteFile metrics.db → /var/lib/pgwd/metrics.db):
+    # sqlite:
+    #   path: "/var/lib/pgwd/metrics.db"
 
 # Chart-created Secret is optional when DB + notifiers live entirely in config.extra.
 # Prefer Sealed Secrets / External Secrets for real webhooks and DB URLs in gitops.

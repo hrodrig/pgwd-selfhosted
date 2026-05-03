@@ -6,8 +6,8 @@ Copy **[`.env.example`](.env.example)** to **`${PGWD_HOST_DATA}/.env`** on the h
 
 The template covers:
 
-- **pgwd** — **`PGWD_DB_URL`**, GHCR **`PGWD_VERSION`**, optional Slack/Loki webhooks, interval / log level
-- **minimal Compose** — optional **`PGWD_HOST_PORT`** (reserved for layouts that publish a port)
+- **pgwd** — **`PGWD_DB_URL`**, GHCR **`PGWD_VERSION`** (default **v0.6.4** in examples), optional Slack/Loki webhooks, interval / log level, optional **`PGWD_SQLITE_PATH`** / **`PGWD_HTTP_LISTEN`** / hysteresis env vars
+- **minimal Compose** — optional **`PGWD_HOST_PORT`** and volume when you enable HTTP **`/metrics`** or SQLite (see **`run/docker-compose/minimal/docker-compose.yml`** comments)
 
 ---
 

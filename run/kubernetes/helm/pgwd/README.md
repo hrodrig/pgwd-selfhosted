@@ -34,7 +34,7 @@ helm show values ./run/kubernetes/helm/pgwd > my-values.yaml
 helm show values pgwd/pgwd --version <chart-version> > my-values.yaml
 ```
 
-This repo (**[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**) is the **source of truth** for the chart; a **packaged Helm repo** on GitHub Pages is **planned** (not required to install today). The **container image** is **`ghcr.io/hrodrig/pgwd`** from [pgwd releases](https://github.com/hrodrig/pgwd/releases). **Registry tags use the same form as Git tags** (e.g. **`v0.6.4`**); a tag like **`0.6.0`** (no `v`) will **not** resolve on GHCR. Set **`image.tag`** in values to the published tag you want.
+This repo (**[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**) is the **source of truth** for the chart; a **packaged Helm repo** on GitHub Pages is **planned** (not required to install today). The **container image** is **`ghcr.io/hrodrig/pgwd`** from [pgwd releases](https://github.com/hrodrig/pgwd/releases). **Registry tags use the same form as Git tags** (e.g. **`v0.6.6`**); a tag like **`0.6.0`** (no `v`) will **not** resolve on GHCR. Set **`image.tag`** in values to the published tag you want.
 
 ### Secrets
 
@@ -74,7 +74,7 @@ exec /home/pgwd/pgwd
 "
 ```
 
-Example **Slack** message (**pgwd** `v0.6.4`, test notification / delivery check):
+Example **Slack** message (**pgwd** `v0.6.6`, test notification / delivery check):
 
 ![Slack incoming webhook: pgwd force-notification test](../../../../assets/pgwd-slack-force-notification.png)
 
@@ -99,14 +99,14 @@ For production, use **`--set-file`** or a values file instead of passing secrets
 
 ### From Helm repository (GitHub Pages, after first chart release)
 
-When **[release-charts](https://github.com/hrodrig/pgwd-selfhosted/blob/develop/.github/workflows/release-charts.yml)** has published **`index.yaml`** and chart **`*.tgz`** artifacts, install from the repo using the **`version:`** in **`Chart.yaml`** (e.g. **`0.1.8`** — chart semver, not the pgwd app release):
+When **[release-charts](https://github.com/hrodrig/pgwd-selfhosted/blob/develop/.github/workflows/release-charts.yml)** has published **`index.yaml`** and chart **`*.tgz`** artifacts, install from the repo using the **`version:`** in **`Chart.yaml`** (e.g. **`0.1.9`** — chart semver, not the pgwd app release):
 
 ```bash
 helm repo add pgwd https://hrodrig.github.io/pgwd-selfhosted
 helm repo update
-helm show values pgwd/pgwd --version 0.1.8 > my-values.yaml
+helm show values pgwd/pgwd --version 0.1.9 > my-values.yaml
 # Edit my-values.yaml for your environment.
-helm upgrade --install pgwd pgwd/pgwd --version 0.1.8 -n pgwd --create-namespace -f my-values.yaml
+helm upgrade --install pgwd pgwd/pgwd --version 0.1.9 -n pgwd --create-namespace -f my-values.yaml
 ```
 
 If **`helm repo add`** or **`helm search`** fails, **`index.yaml`** may not be live yet — use **From this repository** above. Confirm versions with **`helm search repo pgwd -l`** once the index exists.
@@ -176,7 +176,7 @@ This table lists the main knobs; the full key set (**`resources.limits`**, **`af
 |-----------|-------------|---------|
 | `replicaCount` | Number of replicas | `1` |
 | `image.repository` | Image repository | `ghcr.io/hrodrig/pgwd` |
-| `image.tag` | Image tag (must match ghcr, e.g. `v0.6.4`) | `v0.6.4` |
+| `image.tag` | Image tag (must match ghcr, e.g. `v0.6.6`) | `v0.6.6` |
 | `secrets.create` | Create Secret from values | `true` |
 | `secrets.dbUrl` | Postgres connection URL | `""` |
 | `secrets.slackWebhook` | Slack webhook URL | `""` |

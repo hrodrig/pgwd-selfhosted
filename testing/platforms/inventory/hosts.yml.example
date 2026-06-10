@@ -13,7 +13,7 @@ all:
     pgwd_compose_repo_dest: /opt/pgwd-selfhosted
 
     # Image tag for ghcr.io/hrodrig/pgwd when PGWD_IMAGE is unset (see docker-compose image line).
-    pgwd_image_version: v0.6.7
+    pgwd_image_version: v0.6.8
     # Optional: full OCI reference (private registry / dev build). When set, overrides registry+tag.
     # pgwd_image: hcr.example.com/library/pgwd:v0.5.11-dev
 

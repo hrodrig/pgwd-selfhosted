@@ -52,7 +52,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Image
 */}}
 {{- define "pgwd.image" -}}
-{{- /* GHCR tags are v-prefixed (e.g. v0.6.8); keep image.tag and Chart appVersion in sync when bumping. */ -}}
+{{- /* GHCR tags are v-prefixed (e.g. v0.6.10); keep image.tag and Chart appVersion in sync when bumping. */ -}}
 {{- $tag := .Values.image.tag | default .Chart.AppVersion }}
 {{- printf "%s:%s" .Values.image.repository $tag }}
 {{- end }}

@@ -2,7 +2,7 @@
 
 ← [Back to run/README](../../README.md).
 
-This directory is reserved for **raw YAML** manifests (e.g. `Deployment`, optional `Service` / `Ingress` for your own tooling) if you prefer not to use Helm. For the default **v0.6.8** image as documented in this repo, treat **`kubectl logs`** as the primary runtime check unless you enable HTTP **`/metrics`** and scrape it yourself.
+This directory is reserved for **raw YAML** manifests (e.g. `Deployment`, optional `Service` / `Ingress` for your own tooling) if you prefer not to use Helm. For the default **v0.6.10** image as documented in this repo, treat **`kubectl logs`** as the primary runtime check unless you enable HTTP **`/metrics`** and scrape it yourself.
 
 The maintained install path is the **[Helm chart](../helm/pgwd/)**. You can generate a starting point with:
 

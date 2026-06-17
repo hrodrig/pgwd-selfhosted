@@ -12,9 +12,9 @@ Install from **[pgwd Releases](https://github.com/hrodrig/pgwd/releases)** (tarb
 | **\*BSD** (FreeBSD, OpenBSD, NetBSD, DragonFly) | [bsd/README.md](bsd/README.md) |
 | **Solaris / illumos** | [solaris/README.md](solaris/README.md) |
 
-## Align with this repo’s default (`v0.6.8`)
+## Align with this repo’s default (`v0.6.10`)
 
-**Self-hosted paths in this repository** default to the published **GHCR** image **`v0.6.8`**: **`PGWD_DB_URL`**, optional **Slack/Loki**, and **logs** for operational checks. **SQLite, `/metrics`, multi-DB YAML** — **[pgwd README](https://github.com/hrodrig/pgwd/blob/main/README.md)**.
+**Self-hosted paths in this repository** default to the published **GHCR** image **`v0.6.10`**: **`PGWD_DB_URL`**, optional **Slack/Loki**, and **logs** for operational checks. **SQLite, `/metrics`, multi-DB YAML** — **[pgwd README](https://github.com/hrodrig/pgwd/blob/main/README.md)**.
 
 Use the minimal env block in the root **[README](../../README.md)** (**Standalone binary**) or **`-config`** per **[contrib/pgwd.conf.example](https://github.com/hrodrig/pgwd/blob/main/contrib/pgwd.conf.example)** (`client`, `db`, `databases`, `sqlite`, `http`, `notifications`, `kube`, …). Anything outside that file — **[pgwd README](https://github.com/hrodrig/pgwd/blob/main/README.md)** for your tag.
 

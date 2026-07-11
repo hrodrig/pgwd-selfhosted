@@ -2,7 +2,7 @@
 
 ← [Back to run/standalone](../README.md) · [run/README](../../README.md).
 
-1. Download the **Linux** tarball for your architecture from **[pgwd Releases](https://github.com/hrodrig/pgwd/releases)** (e.g. `pgwd_v0.7.0_linux_amd64.tar.gz`).
+1. Download the **Linux** tarball for your architecture from **[pgwd Releases](https://github.com/hrodrig/pgwd/releases)** (e.g. `pgwd_v0.8.0_linux_amd64.tar.gz`).
 2. Extract the **`pgwd`** binary (e.g. `tar xzf …`), then **`chmod +x pgwd`** if needed.
 3. Prefer a **persistent data directory** outside the tarball (same idea as **`PGWD_HOST_DATA`** in Compose):
 

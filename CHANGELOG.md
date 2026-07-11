@@ -7,6 +7,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.14] - 2026-07-11
+
+### Changed
+
+- **Repository `VERSION` 0.1.14** — README **Version** badge aligned.
+- **Helm chart `pgwd`:** **`Chart.yaml`** **`version:`** **0.1.14**, **`appVersion`** **`v0.8.0`**, default **`image.tag`** **`v0.8.0`** — aligned with **[pgwd v0.8.0](https://github.com/hrodrig/pgwd/releases/tag/v0.8.0)** on GHCR (distroless **`static-debian13:nonroot`** runtime; Go **1.26.5**; Cosign + Syft supply chain). **`podSecurityContext`** **`runAsUser`** / **`fsGroup`** **65532** for distroless **`nonroot`**.
+- **Compose / Ansible / docs:** **`PGWD_VERSION`**, **`run/common/.env.example`**, **`testing/platforms`** defaults, and README examples use **`v0.8.0`** as the documented application image tag.
+
 ## [0.1.13] - 2026-07-03
 
 ### Changed

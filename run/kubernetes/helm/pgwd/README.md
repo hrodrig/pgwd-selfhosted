@@ -8,6 +8,8 @@ By default the chart creates a **ClusterIP Service** (`service.enabled`, `http.e
 
 **pgwd 0.8+ image:** **`distroless/static-debian13:nonroot`** on GHCR (no shell). Entrypoint **`/home/pgwd/pgwd`** unchanged. Default **`podSecurityContext.runAsUser`** / **`fsGroup`** **65532** match the image **`nonroot`** user. Pin an older tag (e.g. **`v0.7.0`**, Alpine) only if you override security context to match that image.
 
+**pgwd 0.9+:** **`DISCOVER_MY_PASSWORD`** removed — use a full DSN in a Secret or **`kube.password_from_secret`** ([kubernetes-passwords.md](https://github.com/hrodrig/pgwd/blob/main/docs/kubernetes-passwords.md)). Optional **config profiles**, **`--strict`**, opt-in **collector**, optional **`/metrics`** bearer token. Multi-DB and outside-cluster patterns: **[use-cases.md](https://github.com/hrodrig/pgwd/blob/main/docs/use-cases.md)**. **`kube.postgres`** cannot be combined with **`databases:`** in one process.
+
 **Path vs repository name:** In a clone of **[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**, this chart lives under **`run/kubernetes/helm/pgwd/`**. The segment **`pgwd`** is the **Helm chart name** (matches **`name:`** in **`Chart.yaml`**) and the workload it deploys — not the GitHub repository name (**`pgwd-selfhosted`**). This mirrors **[gghstats-selfhosted](https://github.com/hrodrig/gghstats-selfhosted)** / **`run/kubernetes/helm/gghstats`**.
 
 **Deployment vs application repo:** **All deployment-related work** for pgwd (Helm, Compose layouts, runbooks in **`run/`**, chart CI) lives in **pgwd-selfhosted**. **[hrodrig/pgwd](https://github.com/hrodrig/pgwd)** is only the **Go application**, binary releases, and container image — it does **not** ship this Helm chart on **`main`** (any old **`contrib/helm/pgwd`** path is gone). **`run/kubernetes/helm/pgwd/`** here is the **only** supported chart source until the packaged repo exists. [pgwd **Releases**](https://github.com/hrodrig/pgwd/releases) are **binary / container** **`v*`** tags; the **Helm package index** for installs without a clone is planned on **pgwd-selfhosted** (GitHub Pages) after the first chart release.
@@ -36,7 +38,7 @@ helm show values ./run/kubernetes/helm/pgwd > my-values.yaml
 helm show values pgwd/pgwd --version <chart-version> > my-values.yaml
 ```
 
-This repo (**[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**) is the **source of truth** for the chart; a **packaged Helm repo** on GitHub Pages is **planned** (not required to install today). The **container image** is **`ghcr.io/hrodrig/pgwd`** from [pgwd releases](https://github.com/hrodrig/pgwd/releases). **Registry tags use the same form as Git tags** (e.g. **`v0.8.0`**); a tag like **`0.6.0`** (no `v`) will **not** resolve on GHCR. Set **`image.tag`** in values to the published tag you want.
+This repo (**[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**) is the **source of truth** for the chart; a **packaged Helm repo** on GitHub Pages is **planned** (not required to install today). The **container image** is **`ghcr.io/hrodrig/pgwd`** from [pgwd releases](https://github.com/hrodrig/pgwd/releases). **Registry tags use the same form as Git tags** (e.g. **`v0.9.0`**); a tag like **`0.6.0`** (no `v`) will **not** resolve on GHCR. Set **`image.tag`** in values to the published tag you want.
 
 ### Secrets
 
@@ -76,7 +78,7 @@ exec /home/pgwd/pgwd
 "
 ```
 
-Example **Slack** message (**pgwd** `v0.8.0`, test notification / delivery check):
+Example **Slack** message (**pgwd** `v0.9.0`, test notification / delivery check):
 
 ![Slack incoming webhook: pgwd force-notification test](../../../../assets/pgwd-slack-force-notification.png)
 
@@ -178,7 +180,7 @@ This table lists the main knobs; the full key set (**`resources.limits`**, **`af
 |-----------|-------------|---------|
 | `replicaCount` | Number of replicas | `1` |
 | `image.repository` | Image repository | `ghcr.io/hrodrig/pgwd` |
-| `image.tag` | Image tag (must match ghcr, e.g. `v0.8.0`) | `v0.8.0` |
+| `image.tag` | Image tag (must match ghcr, e.g. `v0.9.0`) | `v0.9.0` |
 | `podSecurityContext.runAsUser` / `fsGroup` | Must match image user (**65532** for pgwd **0.8+** distroless) | `65532` |
 | `secrets.create` | Create Secret from values | `true` |
 | `secrets.dbUrl` | Postgres connection URL | `""` |

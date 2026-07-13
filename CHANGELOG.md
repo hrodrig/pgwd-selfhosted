@@ -7,7 +7,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [0.1.14] - 2026-07-11
+## [0.1.15] - 2026-07-13
+
+### Changed
+
+- **Repository `VERSION` 0.1.15** — README **Version** badge aligned.
+- **Helm chart `pgwd`:** **`Chart.yaml`** **`version:`** **0.1.15**, **`appVersion`** **`v0.9.0`**, default **`image.tag`** **`v0.9.0`** — aligned with **[pgwd v0.9.0](https://github.com/hrodrig/pgwd/releases/tag/v0.9.0)** on GHCR. Upstream **0.9** removes **`DISCOVER_MY_PASSWORD`**, adds **config profiles**, optional **`--strict`**, opt-in **collector**, optional **`/metrics`** auth; see **[use-cases.md](https://github.com/hrodrig/pgwd/blob/main/docs/use-cases.md)** and **[kubernetes-passwords.md](https://github.com/hrodrig/pgwd/blob/main/docs/kubernetes-passwords.md)**.
+- **Compose / Ansible / docs:** **`PGWD_VERSION`**, **`run/common/.env.example`**, **`testing/platforms`** defaults, and README examples use **`v0.9.0`** as the documented application image tag.
+
 
 ### Changed
 

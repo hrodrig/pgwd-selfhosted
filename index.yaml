@@ -2,6 +2,29 @@ apiVersion: v1
 entries:
   pgwd:
   - apiVersion: v2
+    appVersion: v0.9.0
+    created: "2026-07-13T15:50:51.747399772Z"
+    description: Postgres Watch Dog - monitor PostgreSQL connections; Slack/Loki;
+      optional SQLite history, HTTP /healthz and Prometheus /metrics
+    digest: 23cf7bfb6dbbd55860b384be9147d72483cbf7f12111feb46f58ad6f51d93456
+    home: https://github.com/hrodrig/pgwd
+    keywords:
+    - postgres
+    - monitoring
+    - slack
+    - loki
+    kubeVersion: '>=1.28.0'
+    maintainers:
+    - name: Hermes Rodriguez
+      url: https://github.com/hrodrig/pgwd
+    name: pgwd
+    sources:
+    - https://github.com/hrodrig/pgwd
+    type: application
+    urls:
+    - https://github.com/hrodrig/pgwd-selfhosted/releases/download/pgwd-0.1.15/pgwd-0.1.15.tgz
+    version: 0.1.15
+  - apiVersion: v2
     appVersion: v0.8.0
     created: "2026-07-11T23:23:15.443195254Z"
     description: Postgres Watch Dog - monitor PostgreSQL connections; Slack/Loki;
@@ -185,4 +208,4 @@ entries:
     urls:
     - https://github.com/hrodrig/pgwd-selfhosted/releases/download/pgwd-0.1.5/pgwd-0.1.5.tgz
     version: 0.1.5
-generated: "2026-07-11T23:23:15.44326807Z"
+generated: "2026-07-13T15:50:51.747442232Z"

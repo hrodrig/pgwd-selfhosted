@@ -10,33 +10,40 @@ LIMIT ?=
 CHART_DIR ?= run/kubernetes/helm/pgwd
 KUBERNETES_VERSION ?= 1.30.0
 
+GREEN  := \033[0;32m
+YELLOW := \033[0;33m
+CYAN   := \033[0;36m
+RESET  := \033[0m
+
 .PHONY: help release-check test-compose-platforms test-helm-kind test-kind-postgres
 
 help:
-	@echo "pgwd-selfhosted — make targets"
+	@echo "$(GREEN)pgwd-selfhosted$(RESET) — deployment manifests (Compose, Helm, run/)"
 	@echo ""
-	@echo "  make release-check             Local gate before tagging: helm lint, helm template +"
-	@echo "                                 kubeconform (same scenarios as CI), minimal Compose config."
-	@echo "                                 Requires: helm, kubeconform, docker (compose plugin)."
+	@echo "Usage: make [target]"
 	@echo ""
-	@echo "  make test-kind-postgres        kind + postgres-minimal only (testing/kind/)."
-	@echo "                                 Requires: Docker, kind, kubectl."
-	@echo "  make test-helm-kind            Same cluster + Helm install pgwd + log-based Postgres check."
-	@echo "                                 Requires: Docker, kind, kubectl, helm."
+	@echo "$(YELLOW)Release:$(RESET)"
+	@echo "  $(GREEN)release-check$(RESET)             helm lint, helm template + kubeconform (CI parity),"
+	@echo "                                 minimal Compose config. Needs: helm, kubeconform, docker."
+	@echo ""
+	@echo "$(YELLOW)Kubernetes (kind):$(RESET)"
+	@echo "  $(GREEN)test-kind-postgres$(RESET)        kind + postgres-minimal only (testing/kind/)."
+	@echo "                                 Needs: Docker, kind, kubectl."
+	@echo "  $(GREEN)test-helm-kind$(RESET)            kind cluster + Helm install pgwd + Postgres log check."
+	@echo "                                 Needs: Docker, kind, kubectl, helm."
 	@echo "                                 Optional: PGWD_HELM_E2E_CLUSTER, PGWD_KIND_POSTGRES_ROLLOUT_TIMEOUT,"
 	@echo "                                 PGWD_HELM_E2E_ROLLOUT_TIMEOUT, PGWD_HELM_E2E_LOG_WAIT_SECS, PGWD_HELM_E2E_NO_CLEANUP"
 	@echo ""
-	@echo "  make test-compose-platforms   Run Ansible full-cycle on hosts (testing/platforms/)."
-	@echo "                                Requires inventory: testing/platforms/inventory/hosts.yml"
-	@echo "                                Optional: LIMIT=hostname for --limit"
+	@echo "$(YELLOW)Compose / platforms:$(RESET)"
+	@echo "  $(GREEN)test-compose-platforms$(RESET)   Ansible full-cycle on lab hosts (testing/platforms/)."
+	@echo "                                 Needs: testing/platforms/inventory/hosts.yml"
+	@echo "                                 Optional: LIMIT=hostname for --limit"
 	@echo ""
-	@echo "Examples:"
+	@echo "$(CYAN)Examples:$(RESET)"
+	@echo "  make release-check"
 	@echo "  make test-kind-postgres"
 	@echo "  make test-helm-kind"
-	@echo "  make test-compose-platforms"
 	@echo "  make test-compose-platforms LIMIT=vps-ubuntu"
-	@echo ""
-	@echo "Or: cd testing/platforms && ansible-playbook playbooks/full-cycle.yml"
 
 release-check:
 	@command -v helm >/dev/null 2>&1 || { echo "helm not found"; exit 1; }

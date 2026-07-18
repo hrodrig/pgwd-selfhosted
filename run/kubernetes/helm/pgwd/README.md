@@ -8,7 +8,7 @@ By default the chart creates a **ClusterIP Service** (`service.enabled`, `http.e
 
 **pgwd 0.8+ image:** **`distroless/static-debian13:nonroot`** on GHCR (no shell). Entrypoint **`/home/pgwd/pgwd`** unchanged. Default **`podSecurityContext.runAsUser`** / **`fsGroup`** **65532** match the image **`nonroot`** user. Pin an older tag (e.g. **`v0.7.0`**, Alpine) only if you override security context to match that image.
 
-**pgwd 0.9+:** **`DISCOVER_MY_PASSWORD`** removed — use a full DSN in a Secret or **`kube.password_from_secret`** ([kubernetes-passwords.md](https://github.com/hrodrig/pgwd/blob/main/docs/kubernetes-passwords.md)). Optional **config profiles**, **`--strict`**, opt-in **collector**, optional **`/metrics`** bearer token. Multi-DB and outside-cluster patterns: **[use-cases.md](https://github.com/hrodrig/pgwd/blob/main/docs/use-cases.md)**. **`kube.postgres`** cannot be combined with **`databases:`** in one process.
+**pgwd 1.0+:** use **`databases:`** (even for one target); top-level **`db:`**, total/active thresholds, and **`notify_on_connect_failure`** are removed — [UPGRADE-0.9-to-1.0.md](https://github.com/hrodrig/pgwd/blob/main/docs/UPGRADE-0.9-to-1.0.md). **pgwd 0.9+:** **`DISCOVER_MY_PASSWORD`** removed — use a full DSN in a Secret or **`kube.password_from_secret`** ([kubernetes-passwords.md](https://github.com/hrodrig/pgwd/blob/main/docs/kubernetes-passwords.md)). Optional **config profiles**, **`--strict`**, opt-in **collector**, optional **`/metrics`** bearer token. Multi-DB and outside-cluster patterns: **[use-cases.md](https://github.com/hrodrig/pgwd/blob/main/docs/use-cases.md)**. **`kube.postgres`** cannot be combined with **multi-entry** **`databases:`** in one process (a **single** entry + kube is supported).
 
 **Path vs repository name:** In a clone of **[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**, this chart lives under **`run/kubernetes/helm/pgwd/`**. The segment **`pgwd`** is the **Helm chart name** (matches **`name:`** in **`Chart.yaml`**) and the workload it deploys — not the GitHub repository name (**`pgwd-selfhosted`**). This mirrors **[gghstats-selfhosted](https://github.com/hrodrig/gghstats-selfhosted)** / **`run/kubernetes/helm/gghstats`**.
 
@@ -38,7 +38,7 @@ helm show values ./run/kubernetes/helm/pgwd > my-values.yaml
 helm show values pgwd/pgwd --version <chart-version> > my-values.yaml
 ```
 
-This repo (**[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**) is the **source of truth** for the chart; a **packaged Helm repo** on GitHub Pages is **planned** (not required to install today). The **container image** is **`ghcr.io/hrodrig/pgwd`** from [pgwd releases](https://github.com/hrodrig/pgwd/releases). **Registry tags use the same form as Git tags** (e.g. **`v0.9.0`**); a tag like **`0.6.0`** (no `v`) will **not** resolve on GHCR. Set **`image.tag`** in values to the published tag you want.
+This repo (**[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**) is the **source of truth** for the chart; a **packaged Helm repo** on GitHub Pages is **planned** (not required to install today). The **container image** is **`ghcr.io/hrodrig/pgwd`** from [pgwd releases](https://github.com/hrodrig/pgwd/releases). **Registry tags use the same form as Git tags** (e.g. **`v1.0.0`**); a tag like **`0.6.0`** (no `v`) will **not** resolve on GHCR. Set **`image.tag`** in values to the published tag you want.
 
 ### Secrets
 
@@ -78,7 +78,7 @@ exec /home/pgwd/pgwd
 "
 ```
 
-Example **Slack** message (**pgwd** `v0.9.0`, test notification / delivery check):
+Example **Slack** message (**pgwd** `v1.0.0`, test notification / delivery check):
 
 ![Slack incoming webhook: pgwd force-notification test](../../../../assets/pgwd-slack-force-notification.png)
 
@@ -137,7 +137,7 @@ env:
 
 ### Config file
 
-Set `config.enabled: true` and provide full YAML in `config.extra` using the pgwd file schema (for example `db:` for the Postgres URL and thresholds, `notifications:` for Slack/Loki). Match field names and structure to the **pgwd image tag** you run (see **`internal/config/file.go`** / **`contrib/pgwd.conf.example`** upstream). Example overlay: **[`values-config-mode.yaml`](values-config-mode.yaml)** (`helm upgrade … -f values-config-mode.yaml`).
+Set `config.enabled: true` and provide full YAML in `config.extra` using the pgwd file schema (for example **`databases:`** for the Postgres URL and thresholds — top-level **`db:`** was removed in pgwd **1.0** — plus `notifications:` for Slack/Loki). Match field names and structure to the **pgwd image tag** you run (see **`internal/config/file.go`** / **`contrib/pgwd.conf.example`** upstream). Example overlay: **[`values-config-mode.yaml`](values-config-mode.yaml)** (`helm upgrade … -f values-config-mode.yaml`).
 
 **Note:** When using a config file, env vars are ignored by pgwd.
 
@@ -147,7 +147,7 @@ When **`config.enabled`** and **`persistence.enabled`** are both **`true`**, pgw
 
 Set **`sqlite.path`** inside **`config.extra`** to an absolute path **on the writable volume**, typically under **`persistence.mountPath`**, e.g. **`/var/lib/pgwd/metrics.db`** when **`mountPath`** is **`/var/lib/pgwd`** and **`sqliteFile`** is **`metrics.db`**. If you use **`persistence.subPath`**, **`sqlite.path`** must still resolve to a file visible at the container mount (under that mount point). Pointing **`sqlite.path`** at ephemeral paths (e.g. under **`/tmp`**) defeats persistence across pod restarts.
 
-**Multi-database (`databases:` in `config.extra`):** The same rules apply as in upstream pgwd: **`databases:`** is for **direct** Postgres URLs only — **not** together with **`kube.postgres`** / **`-kube-postgres`** in that process. Persisted metrics and hysteresis key rows by **`(client, cluster, database)`** (hostname from the URL is **not** part of the key); set a **distinct `client` per `databases:` entry** when several hosts use the same database name. See **[Multi-database limitations](https://github.com/hrodrig/pgwd/blob/main/README.md#multi-database-limitations)**.
+**Multi-database (`databases:` in `config.extra`):** The same rules apply as in upstream pgwd: **multi-entry** **`databases:`** is for **direct** Postgres URLs only — **not** together with **`kube.postgres`** / **`-kube-postgres`** in that process (a **single** `databases:` entry + kube is supported). Persisted metrics and hysteresis key rows by **`(client, cluster, database)`** (hostname from the URL is **not** part of the key); set a **distinct `client` per `databases:` entry** when several hosts use the same database name. See **[Multi-database limitations](https://github.com/hrodrig/pgwd/blob/main/README.md#multi-database-limitations)**.
 
 ```yaml
 # values.yaml
@@ -156,10 +156,10 @@ config:
   extra: |
     client: pgwd-k8s
     interval: 60
-    db:
-      url: postgres://user:pass@postgres.default.svc.cluster.local:5432/prod
-      threshold:
-        levels: "75,85,95"
+    databases:
+      - url: postgres://user:pass@postgres.default.svc.cluster.local:5432/prod
+        threshold:
+          levels: "75,85,95"
     notifications:
       slack:
         webhook: "https://hooks.slack.com/..."
@@ -180,7 +180,7 @@ This table lists the main knobs; the full key set (**`resources.limits`**, **`af
 |-----------|-------------|---------|
 | `replicaCount` | Number of replicas | `1` |
 | `image.repository` | Image repository | `ghcr.io/hrodrig/pgwd` |
-| `image.tag` | Image tag (must match ghcr, e.g. `v0.9.0`) | `v0.9.0` |
+| `image.tag` | Image tag (must match ghcr, e.g. `v1.0.0`) | `v1.0.0` |
 | `podSecurityContext.runAsUser` / `fsGroup` | Must match image user (**65532** for pgwd **0.8+** distroless) | `65532` |
 | `secrets.create` | Create Secret from values | `true` |
 | `secrets.dbUrl` | Postgres connection URL | `""` |

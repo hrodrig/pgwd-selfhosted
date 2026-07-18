@@ -7,6 +7,15 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.16] - 2026-07-18
+
+### Changed
+
+- **Repository `VERSION` 0.1.16** — README **Version** badge aligned.
+- **Helm chart `pgwd`:** **`Chart.yaml`** **`version:`** **0.1.16**, **`appVersion`** **`v1.0.0`**, default **`image.tag`** **`v1.0.0`** — aligned with **[pgwd v1.0.0](https://github.com/hrodrig/pgwd/releases/tag/v1.0.0)** on GHCR. Upstream **1.0** requires **`databases:`** (top-level **`db:`** removed), drops total/active thresholds and **`notify_on_connect_failure`** — see **[UPGRADE-0.9-to-1.0.md](https://github.com/hrodrig/pgwd/blob/main/docs/UPGRADE-0.9-to-1.0.md)**.
+- **Compose / Ansible / docs:** **`PGWD_VERSION`**, **`run/common/.env.example`**, **`testing/platforms`** defaults, and README examples use **`v1.0.0`** as the documented application image tag.
+- **Helm `config.extra` samples:** migrate example YAML from **`db:`** to **`databases:`**; remove **`notify_on_connect_failure`**.
+
 ## [0.1.15] - 2026-07-13
 
 ### Changed
@@ -164,7 +173,9 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 The **0.1.0** Compose bullet above described **Traefik**, a bundled observability stack, and **Prometheus** scrape examples. Those paths were **removed** later on **`develop`**. The current tree is **minimal Compose** only (no bundled observability stack); **pgwd 0.6+** can expose **`/metrics`** for your own Prometheus — see [`run/docker-compose/README.md`](run/docker-compose/README.md) and the root README.
 
-[Unreleased]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.13...HEAD
+[Unreleased]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.16...HEAD
+[0.1.16]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.15...v0.1.16
+[0.1.15]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.14...v0.1.15
 [0.1.13]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.12...v0.1.13
 [0.1.12]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.11...v0.1.12
 [0.1.11]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.10...v0.1.11

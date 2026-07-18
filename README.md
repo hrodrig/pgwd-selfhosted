@@ -1,6 +1,6 @@
 # pgwd-selfhosted
 
-[![Version](https://img.shields.io/badge/version-0.1.15-blue)](https://github.com/hrodrig/pgwd-selfhosted/releases)
+[![Version](https://img.shields.io/badge/version-0.1.16-blue)](https://github.com/hrodrig/pgwd-selfhosted/releases)
 [![Release](https://img.shields.io/github/v/release/hrodrig/pgwd-selfhosted?label=release)](https://github.com/hrodrig/pgwd-selfhosted/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![App image on GHCR](https://img.shields.io/badge/image-ghcr.io%2Fhrodrig%2Fpgwd-2496ED?logo=github)](https://github.com/hrodrig/pgwd/pkgs/container/pgwd)
@@ -41,7 +41,7 @@ Deployment manifests for **[pgwd](https://github.com/hrodrig/pgwd)** — Compose
 
 Shared env template for Compose: copy **[`run/common/.env.example`](run/common/.env.example)** to **`${PGWD_HOST_DATA}/.env`**, set **`PGWD_HOST_DATA`** inside that file, and pass **`--env-file "${PGWD_HOST_DATA}/.env"`** to Compose. **Which Compose file?** **[`run/docker-compose/README.md`](run/docker-compose/README.md)**. Optional: **[`run/scripts/compose-stack.sh`](run/scripts/compose-stack.sh)** (`--help`). Deeper walkthroughs: **[`run/README.md`](run/README.md)**.
 
-**Default image tag** in examples is **`v0.9.0`** ([pgwd releases](https://github.com/hrodrig/pgwd/releases)); set **`PGWD_VERSION`** to the tag you run. **pgwd 0.8+** uses a **distroless** container image on GHCR (entrypoint **`/home/pgwd/pgwd`** unchanged; no shell in the image). **Go 1.26.5**; upstream releases publish **Cosign** signatures and **Syft** SBOMs — see [pgwd supply chain verification](https://github.com/hrodrig/pgwd#supply-chain-verification). **pgwd 0.9+** removes **`DISCOVER_MY_PASSWORD`** (use Secret-backed DSN or **`kube.password_from_secret`** — [kubernetes-passwords.md](https://github.com/hrodrig/pgwd/blob/main/docs/kubernetes-passwords.md)); adds **config profiles**, optional **`--strict`**, opt-in **collector**, optional **`/metrics`** auth, and operator guides **[use-cases.md](https://github.com/hrodrig/pgwd/blob/main/docs/use-cases.md)** / **[kubernetes-passwords.md](https://github.com/hrodrig/pgwd/blob/main/docs/kubernetes-passwords.md)**. **pgwd 0.7+** adds **PagerDuty**, **Teams**, and **generic webhook** notifiers plus shared **HTTP retry**. **pgwd 0.6+** adds optional **SQLite** (history, hysteresis, resolution notifications), **HTTP** **`/healthz`** and Prometheus **`/metrics`**, **`databases:`** multi-DB YAML, and **CSV export** (CLI). The **minimal Compose** layout here stays env-only and does not mount SQLite or publish a port unless you extend it — see **[`run/common/.env.example`](run/common/.env.example)** and **[pgwd README](https://github.com/hrodrig/pgwd/blob/main/README.md)**. This repo does **not** ship a bundled Prometheus stack; scrape **`/metrics`** with your own monitoring.
+**Default image tag** in examples is **`v1.0.0`** ([pgwd releases](https://github.com/hrodrig/pgwd/releases)); set **`PGWD_VERSION`** to the tag you run. **pgwd 0.8+** uses a **distroless** container image on GHCR (entrypoint **`/home/pgwd/pgwd`** unchanged; no shell in the image). **Go 1.26.5**; upstream releases publish **Cosign** signatures and **Syft** SBOMs — see [pgwd supply chain verification](https://github.com/hrodrig/pgwd#supply-chain-verification). **pgwd 0.9+** removes **`DISCOVER_MY_PASSWORD`** (use Secret-backed DSN or **`kube.password_from_secret`** — [kubernetes-passwords.md](https://github.com/hrodrig/pgwd/blob/main/docs/kubernetes-passwords.md)); adds **config profiles**, optional **`--strict`**, opt-in **collector**, optional **`/metrics`** auth, and operator guides **[use-cases.md](https://github.com/hrodrig/pgwd/blob/main/docs/use-cases.md)** / **[kubernetes-passwords.md](https://github.com/hrodrig/pgwd/blob/main/docs/kubernetes-passwords.md)**. **pgwd 0.7+** adds **PagerDuty**, **Teams**, and **generic webhook** notifiers plus shared **HTTP retry**. **pgwd 0.6+** adds optional **SQLite** (history, hysteresis, resolution notifications), **HTTP** **`/healthz`** and Prometheus **`/metrics`**, **`databases:`** multi-DB YAML, and **CSV export** (CLI). The **minimal Compose** layout here stays env-only and does not mount SQLite or publish a port unless you extend it — see **[`run/common/.env.example`](run/common/.env.example)** and **[pgwd README](https://github.com/hrodrig/pgwd/blob/main/README.md)**. This repo does **not** ship a bundled Prometheus stack; scrape **`/metrics`** with your own monitoring.
 
 **[↑ Contents](#table-of-contents)**
 
@@ -66,7 +66,7 @@ The **minimal** path uses **environment variables**, **Postgres**, optional **Sl
 
 **Stop:** `Ctrl+C`. Configuration: **[`contrib/pgwd.conf.example`](https://github.com/hrodrig/pgwd/blob/main/contrib/pgwd.conf.example)** and **[upstream README](https://github.com/hrodrig/pgwd/blob/main/README.md)**.
 
-**Multi-database YAML (`databases:`):** **`databases:`** cannot be combined with **`-kube-postgres`** in the same process; SQLite history uses **`(client, cluster, database)`** (not the URL host) — use a **unique `client` per entry** when the same DB name appears on different hosts. See **[Multi-database limitations](https://github.com/hrodrig/pgwd/blob/main/README.md#multi-database-limitations)** in the pgwd README.
+**Multi-database YAML (`databases:`):** **multi-entry** **`databases:`** cannot be combined with **`-kube-postgres`** in the same process (a **single** entry + kube is supported); SQLite history uses **`(client, cluster, database)`** (not the URL host) — use a **unique `client` per entry** when the same DB name appears on different hosts. See **[Multi-database limitations](https://github.com/hrodrig/pgwd/blob/main/README.md#multi-database-limitations)** in the pgwd README.
 
 **More:** **[`run/standalone/README.md`](run/standalone/README.md)** · [Linux](run/standalone/linux/README.md) · [macOS](run/standalone/macos/README.md) · [Windows](run/standalone/windows/README.md) · [*BSD](run/standalone/bsd/README.md) · [Solaris / illumos](run/standalone/solaris/README.md)
 
@@ -87,7 +87,7 @@ docker run -d \
   --name pgwd \
   -e PGWD_DB_URL='postgres://user:pass@host:5432/dbname?sslmode=disable' \
   -e PGWD_INTERVAL=60 \
-  ghcr.io/hrodrig/pgwd:v0.9.0
+  ghcr.io/hrodrig/pgwd:v1.0.0
 ```
 
 Use an image tag that exists on GHCR ([releases](https://github.com/hrodrig/pgwd/releases)); match **`PGWD_VERSION`** in [`run/common/.env.example`](run/common/.env.example). See **[`run/docker/README.md`](run/docker/README.md)** for optional notifiers, **`PGWD_DRY_RUN`**, and **[one-shot / `--rm`](run/docker/README.md#one-shot-container-no-daemon)**. **[Compose index](run/docker-compose/README.md)** when you need the minimal Compose layout.
@@ -179,7 +179,7 @@ kubectl create secret generic pgwd-secrets \
 
 Then in **`my-values.yaml`**: set **`secrets.create: false`**, **`secrets.existingSecret: pgwd-secrets`**, and keep **`env.PGWD_*`** for non-secret settings (interval, log level, etc.).
 
-You may use **`config.enabled: true`** for a full config file (`db:` + notifications, etc.); see the chart **[README](run/kubernetes/helm/pgwd/README.md)**.
+You may use **`config.enabled: true`** for a full config file (`databases:` + notifications, etc.); see the chart **[README](run/kubernetes/helm/pgwd/README.md)**.
 
 See [`values.yaml`](run/kubernetes/helm/pgwd/values.yaml) in-tree for defaults.
 
@@ -233,7 +233,7 @@ run/
 
 - **[`VERSION`](VERSION)** — semver of **this repository** (Compose, docs, `run/`, etc.). When you change it, align the **Version** badge in this README and (if you keep a release entry) **CHANGELOG.md**; on **`main`**, tag with **`v<semver>`** (e.g. `v0.2.0`). This number is **not** tied to the Helm chart on every bump.
 - **Helm chart (`run/kubernetes/helm/pgwd/Chart.yaml` → `version:`)** — semver of the **chart package** published to [GitHub Pages](https://hrodrig.github.io/pgwd-selfhosted/index.yaml) / [Releases](https://github.com/hrodrig/pgwd-selfhosted/releases). Bump **`version:`** when the chart itself changes (templates, `values`, etc.). It may **lag** behind **`VERSION`** (e.g. repo `0.1.9`, chart `0.1.9` when both bump together). [chart-releaser](https://github.com/helm/chart-releaser) may skip publishing if **`run/kubernetes/helm/`** did not change — expected for docs-only repo releases.
-- **`Chart.yaml` → `appVersion`** — **pgwd** application / image line; align with [pgwd releases](https://github.com/hrodrig/pgwd/releases) when you bump the deployed image story (defaults in this repo track **v0.9.0**).
+- **`Chart.yaml` → `appVersion`** — **pgwd** application / image line; align with [pgwd releases](https://github.com/hrodrig/pgwd/releases) when you bump the deployed image story (defaults in this repo track **v1.0.0**).
 - **`PGWD_VERSION`** in **`${PGWD_HOST_DATA}/.env`** (or the env file you pass to Compose) — **container image** tag on GHCR ([pgwd releases](https://github.com/hrodrig/pgwd/releases)), not the same as **`VERSION`**.
 
 **[↑ Contents](#table-of-contents)**

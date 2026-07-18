@@ -5,7 +5,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/hrodrig/pgwd
-  tag: "v0.9.0"
+  tag: "v1.0.0"
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -50,21 +50,21 @@ affinity: {}
 # pgwd configuration
 # -----------------------------------------------------------------------------
 # Two modes:
-# 1. Config file: set config.enabled=true and full YAML in config.extra (db:, notifications:, …).
+# 1. Config file: set config.enabled=true and full YAML in config.extra (databases:, notifications:, …).
 # 2. Env vars: set config.enabled=false and use env.* below.
 #
 config:
   enabled: false
   # When enabled, full config YAML in config.extra (ConfigMap content is written verbatim — this chart does not tpl it).
   # To take the DB URL from chart secrets, keep config.enabled=false and use secrets.dbUrl → PGWD_DB_URL on the Deployment.
-  # Example db: fragment if you embed a static URL here (align with your pgwd image tag / file schema):
-  # db:
-  #   url: postgres://user:pass@postgres.default.svc.cluster.local:5432/mydb?sslmode=disable
-  #   threshold:
-  #     levels: "75,85,95"
+  # Example databases: fragment if you embed a static URL here (pgwd 1.0+; top-level db: removed):
+  # databases:
+  #   - url: postgres://user:pass@postgres.default.svc.cluster.local:5432/mydb?sslmode=disable
+  #     threshold:
+  #       levels: "75,85,95"
   # Schema: pgwd file YAML (see hrodrig/pgwd internal/config/file.go and contrib/pgwd.conf.example).
-  # Multi-database: if you use databases: with several URLs, do not combine with kube.postgres in the same
-  # config; use direct in-cluster URLs. SQLite history keys (client, cluster, database) omit URL host — use
+  # Multi-database: several databases: URLs cannot combine with kube.postgres in the same process
+  # (a single databases: entry + kube is supported upstream). SQLite keys omit URL host — use
   # unique client per databases: entry when the same DB name is on different hosts. See pgwd README
   # https://github.com/hrodrig/pgwd/blob/main/README.md#multi-database-limitations
   # Supported YAML keys include log_level, confirm_alert, confirm_ok, sqlite, http (see upstream file.go). CSV export is CLI-only.
@@ -73,9 +73,8 @@ config:
     client: "pgwd-k8s"
     interval: 60
     dry_run: true
-    notify_on_connect_failure: true
-    db:
-      url: postgres://user:pass@postgres.default.svc.cluster.local:5432/mydb?sslmode=disable
+    databases:
+      - url: postgres://user:pass@postgres.default.svc.cluster.local:5432/mydb?sslmode=disable
     notifications:
       slack:
         webhook: ""

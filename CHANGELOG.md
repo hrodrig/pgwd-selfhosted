@@ -7,6 +7,14 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.17] - 2026-08-31
+
+### Changed
+
+- **Repository `VERSION` 0.1.17** — README **Version** badge aligned.
+- **Helm chart `pgwd`:** **`Chart.yaml`** **`version:`** **0.1.17**, **`appVersion`** **`v1.1.1`**, default **`image.tag`** **`v1.1.1`** — aligned with **[pgwd v1.1.1](https://github.com/hrodrig/pgwd/releases/tag/v1.1.1)** on GHCR (Go **1.26.6**, `golang.org/x/net` **v0.56.0**).
+- **Compose / Ansible / docs:** **`PGWD_VERSION`**, **`run/common/.env.example`**, **`testing/platforms`** defaults, and README examples use **`v1.1.1`** as the documented application image tag.
+
 ## [0.1.16] - 2026-07-18
 
 ### Changed
@@ -173,7 +181,8 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 The **0.1.0** Compose bullet above described **Traefik**, a bundled observability stack, and **Prometheus** scrape examples. Those paths were **removed** later on **`develop`**. The current tree is **minimal Compose** only (no bundled observability stack); **pgwd 0.6+** can expose **`/metrics`** for your own Prometheus — see [`run/docker-compose/README.md`](run/docker-compose/README.md) and the root README.
 
-[Unreleased]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.16...HEAD
+[Unreleased]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.17...HEAD
+[0.1.17]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.16...v0.1.17
 [0.1.16]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.15...v0.1.16
 [0.1.15]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.14...v0.1.15
 [0.1.13]: https://github.com/hrodrig/pgwd-selfhosted/compare/v0.1.12...v0.1.13

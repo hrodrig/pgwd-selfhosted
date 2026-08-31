@@ -38,7 +38,7 @@ helm show values ./run/kubernetes/helm/pgwd > my-values.yaml
 helm show values pgwd/pgwd --version <chart-version> > my-values.yaml
 ```
 
-This repo (**[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**) is the **source of truth** for the chart; a **packaged Helm repo** on GitHub Pages is **planned** (not required to install today). The **container image** is **`ghcr.io/hrodrig/pgwd`** from [pgwd releases](https://github.com/hrodrig/pgwd/releases). **Registry tags use the same form as Git tags** (e.g. **`v1.0.0`**); a tag like **`0.6.0`** (no `v`) will **not** resolve on GHCR. Set **`image.tag`** in values to the published tag you want.
+This repo (**[pgwd-selfhosted](https://github.com/hrodrig/pgwd-selfhosted)**) is the **source of truth** for the chart; a **packaged Helm repo** on GitHub Pages is **planned** (not required to install today). The **container image** is **`ghcr.io/hrodrig/pgwd`** from [pgwd releases](https://github.com/hrodrig/pgwd/releases). **Registry tags use the same form as Git tags** (e.g. **`v1.1.1`**); a tag like **`0.6.0`** (no `v`) will **not** resolve on GHCR. Set **`image.tag`** in values to the published tag you want.
 
 ### Secrets
 
@@ -78,7 +78,7 @@ exec /home/pgwd/pgwd
 "
 ```
 
-Example **Slack** message (**pgwd** `v1.0.0`, test notification / delivery check):
+Example **Slack** message (**pgwd** `v1.1.1`, test notification / delivery check):
 
 ![Slack incoming webhook: pgwd force-notification test](../../../../assets/pgwd-slack-force-notification.png)
 
@@ -180,7 +180,7 @@ This table lists the main knobs; the full key set (**`resources.limits`**, **`af
 |-----------|-------------|---------|
 | `replicaCount` | Number of replicas | `1` |
 | `image.repository` | Image repository | `ghcr.io/hrodrig/pgwd` |
-| `image.tag` | Image tag (must match ghcr, e.g. `v1.0.0`) | `v1.0.0` |
+| `image.tag` | Image tag (must match ghcr, e.g. `v1.1.1`) | `v1.1.1` |
 | `podSecurityContext.runAsUser` / `fsGroup` | Must match image user (**65532** for pgwd **0.8+** distroless) | `65532` |
 | `secrets.create` | Create Secret from values | `true` |
 | `secrets.dbUrl` | Postgres connection URL | `""` |

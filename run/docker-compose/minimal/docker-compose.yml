@@ -8,7 +8,7 @@ x-logging: &default-logging
 services:
   pgwd:
     # Full ref overrides PGWD_VERSION+GHCR (private registry, dev tags): set PGWD_IMAGE in .env.
-    image: ${PGWD_IMAGE:-ghcr.io/hrodrig/pgwd:${PGWD_VERSION:-v1.0.0}}
+    image: ${PGWD_IMAGE:-ghcr.io/hrodrig/pgwd:${PGWD_VERSION:-v1.1.1}}
     container_name: pgwd
     restart: unless-stopped
     environment:
